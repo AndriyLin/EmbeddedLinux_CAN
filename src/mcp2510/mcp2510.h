@@ -1,6 +1,17 @@
 #ifndef MCP2510_H
 #define MCP2510_H 1
 
+
+#include <linux/linkage.h>
+#include <linux/spinlock.h>
+#include <linux/wait.h>
+#include <linux/rwsem.h>
+
+#include <asm/atomic.h>
+#include <asm/proc/locks.h>
+
+//#include <asm-arm/semaphore.h>
+
 /********************mcp2510 head file***********************************************
  This file defines mcp2510 chip info,including reigisters,buffers,and commands.
 ************************************************************************************/
@@ -892,8 +903,11 @@ void Test_can_bus(void);
 //WHEN USER WHAT TO READ THE rxdata[i],and the driver what to write it ,then it will happen.
 //or then reading one txdata[i],and write by user ,also will happen this .
 
-struct semaphore rx_mutex;
-struct semaphore tx_mutex;
+extern struct semaphore rx_mutex;
+extern struct semaphore tx_mutex;
+
+//struct semaphore rx_mutex;
+//struct semaphore tx_mutex;
 
 #define IOCTL_MOD_SET 0
 #define IOCTL_GET_MODE 1

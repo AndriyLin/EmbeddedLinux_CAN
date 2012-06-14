@@ -10,6 +10,9 @@
 #include "spi.h"
 #include "mcp2510.h"	  
 
+struct semaphore rx_mutex;
+struct semaphore tx_mutex;
+
 //enable mcp2510
 //use GPG2 as the chip select signal
 void enable2510()

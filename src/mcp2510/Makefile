@@ -1,10 +1,14 @@
-CC=/opt/host/armv4l/bin/armv4l-unknown-linux-gcc
-LD=/opt/host/armv4l/bin/armv4l-unknown-linux-ld
-CFLAGS = -D__KERNEL__ -I/mnt/my/HHARM9-EDU/kernel/include/linux -I/mnt/my/HHARM9-EDU/kernel/include -Wall -Wstrict-prototypes -Wno-trigraphs -Os -mapcs -fno-strict-aliasing -fno-common -fno-common -pipe -mapcs-32 -march=armv4 -mtune=arm9tdmi -mshort-load-bytes -msoft-float -DKBUILD_BASENAME=s3c2410_testirq -I/opt/host/armv4l/src/linux/include -DMODULE	
+CC=~/embedded_linux_tmp/arm_tools/bin/arm-linux-gcc
+LD=~/embedded_linux_tmp/arm_tools/bin/arm-linux-ld
+CFLAGS = -D__KERNEL__ -I/home/b092837_linxuankang/embedded_linux_tmp/source_dir/linux-2.4.18_kernel/include/linux -I/home/b092837_linxuankang/embedded_linux_tmp/source_dir/linux-2.4.18_kernel/include -Wall -Wstrict-prototypes -Wno-trigraphs -Os -mapcs -fno-strict-aliasing -fno-common -fno-common -pipe -mapcs-32 -march=armv4 -mtune=arm9tdmi -mshort-load-bytes -msoft-float -DKBUILD_BASENAME=s3c2410_testirq -I/home/b092837_linxuankang/embedded_linux_tmp/source_dir/linux-2.4.18_kernel/include/asm/arch -DMODULE 
+
 
 can_all.o: can.o 
 	$(LD) -r $^ -o $@ 
 all: can_all.o
+
+test:
+	$(CC) -o test test.c
  
 clean:
 	rm -rf *.o

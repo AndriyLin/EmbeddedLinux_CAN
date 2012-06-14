@@ -17,14 +17,17 @@
 #include<linux/signal.h>
 #include<linux/sched.h>
 
-#include<linux/interrupt.h>
 #include <linux/blkdev.h>
 
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
 #include <linux/wait.h>
 #include <asm/irq.h>
+//#include <include/interrupt.h>
 #include <linux/delay.h>
+
+#include <asm/arch/hardware.h>
+#include <asm/arch/irqs.h>
 
 #include "spi.h"
 #include "mcp2510.h"
@@ -35,6 +38,8 @@
 #define INT_DEV_MAJOR 240
 #define SIG_MYINT 33
 #define TIME_STEP  (1000)
+
+#define IRQ_EINT2 2
 
 
 struct fasync_struct *can_async_queue;
@@ -270,6 +275,7 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 {
  //add your own code
+return 0;
 }
 
 
