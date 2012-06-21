@@ -12,29 +12,43 @@
 
 //#include <asm-arm/semaphore.h>
 
+
+/************************************************************************/
+/* 使编译通过，修改了注释，增加了分区导读和一些拼写错误的更正！ by Andriy   */
+/************************************************************************/
+
+
+
 /********************mcp2510 head file***********************************************
  This file defines mcp2510 chip info,including reigisters,buffers,and commands.
-************************************************************************************/
+ ************************************************************************************/
 
 //Mcp2510 register address
 #define U8 unsigned char
 #define U32 unsigned int
 
-/********************MCP2510 SPI  commands defines begin*****************************
+
+
+
+
+/************************************************************************/
+/*       注：这里开始下去都是说SPI的相关宏定义，可以略看                   */
+/************************************************************************/
+
+/******************** MCP2510 SPI commands defines begin *****************************
  All of these commands are sent to MCP2510 via SPI interface.
  All of these commands are executed in MCP2510.
- All of these commands valid only when the nCS of MCP2510 are low level in whole exe-
- cutive time.
+ All of these commands valid only when the nCS of MCP2510 are low level in whole executive time.
 ************************************************************************************/
 
-/********************write command***************************************************
+/******************** write command ***************************************************
  Write information into MCP2510 register,and address.
  Formate is CMD_WRITE,address(one byte length),data(one byte length).
  Where the address is one in MCP2510 address map.
 ************************************************************************************/
 #define CMD_WRITE	0x02    //00000010
 
-/********************read command****************************************************
+/******************** read command ****************************************************
  Read information from MCP2510 register,or address.
  Formate is CMD_READ,address(one byte length).
  The command is sent on SI pin into MCP2510,and data will return on the next Tscl of 
@@ -42,22 +56,20 @@
 ************************************************************************************/
 #define CMD_READ	0x03    //00000011
 
-/********************reset command***************************************************
+/******************** reset command ***************************************************
  Reset the MCP2510.The effect is same as lowe level of nreset pin.	 
 ************************************************************************************/
 #define CMD_RESET	0xc0    //11000000
 
-/********************read status command*********************************************
- Read status bit of receive and transmition.
+/******************** read status command *********************************************
+ Read status bit of receive and transmitting.
  Format is CMD_READS.
- The value(one byte length) of register will appear on SO pin after the command is c-
- ompleting sending on SI pin.
- Once the SCK and nCS of MCP2510 is also valid after the first appearance,the value wil-
- l repeat again.
+ The value(one byte length) of register will appear on SO pin after the command is completing sending on SI pin.
+ Once the SCK and nCS of MCP2510 is also valid after the first appearance,the value will repeat again.
 ************************************************************************************/
 #define CMD_READS	0xa0    //10100000
 
-/********************bit modify command**********************************************
+/******************** bit modify command **********************************************
  Modify some bit(s) of control or status registers.
  Format is CMD_BIT_MODIFY,address(of register),mask byte,data byte.
  Where mask byte tells which bit(s) will modified and data byte tells that the bit(s) 
@@ -65,23 +77,36 @@
 ************************************************************************************/
 #define CMD_MODIFY	0x05    //00000101
 
-/********************request to send TX buffer0**************************************
+/******************** request to send TX buffer0 **************************************
  Send message in Tx buffer0 out.
 ************************************************************************************/
 #define CMD_RTS0	0x81    //10000001
 
-/********************request to send TX buffer1**************************************
+/******************** request to send TX buffer1 **************************************
  Send message in Tx buffer1 out.
 ************************************************************************************/
 #define CMD_RTS1	0x82    //10000010
 
-/********************request to send TX buffer2**************************************
+/******************** request to send TX buffer2 **************************************
  Send message in Tx buffer2 out.
 ************************************************************************************/
 #define CMD_RTS2	0x84    //10000100
 
 /********************MCP2510 SPI  commands defines end******************************/
 
+/************************************************************************/
+/*               注：好了，SPI的宏定义结束了                              */
+/************************************************************************/
+
+
+
+
+
+
+
+/************************************************************************/
+/*        注：下头是CAN内的寄存器的各种宏定义，可以略看                    */
+/************************************************************************/
 
 /********************CAN register address and format define begin**************************************/
 /********************CAN status register*********************************************
@@ -600,7 +625,6 @@
 #define TXB0D7		0X3D
 
 
-
 //****		TRANSMIT BUFFER 1 ..
 /********************Transmit Buffer 1 Standard Identifier High**********************
  |SID10|SID9|SID8|SID7|SID6|SID5|SID4|SID3| 
@@ -633,7 +657,6 @@
 #define TXB1D5		0X4B   
 #define TXB1D6		0X4C   
 #define TXB1D7		0X4D
-
 
 
 //****		TRANSMIT BUFFER 2 ..
@@ -713,7 +736,6 @@
 #define RXB0D7		0X6D
 
 
-
 //****		RECEIVE BUFFER 1 ...
 /********************Receive Buffer 1 Standard Identifier High**********************
  |SID10|SID9|SID8|SID7|SID6|SID5|SID4|SID3| 
@@ -756,8 +778,6 @@
 #define RXB1D6		0X7C 
 #define RXB1D7		0X7D
 
-
-
 //these are old defines by fan
 /*
 //bandrate
@@ -787,6 +807,20 @@
 #define BRP8            0x07  
 */
 
+/************************************************************************/
+/*               注：CAN内的寄存器的各种宏定义结束                        */
+/************************************************************************/
+
+
+
+
+
+
+
+/************************************************************************/
+/*     注：接下来才是真正最重要的各种结构和函数的定义！一定要看！           */
+/************************************************************************/
+
 /*#define IOCTL_MAGIC  't'
 
 typedef struct
@@ -801,10 +835,9 @@ typedef struct
 #define IOCTL_test4 _IO(IOCTL_MAGIC,3)
 */
 
-#define MCP2510_CanRevBuffer    128     //this is in board RAM.^M
-/*********Can data strucutre*********************************************************^M
- This structure used to store message received or transmit message in RAM of board,n-^M
- ot in MCP2510.^M
+#define MCP2510_CanRevBuffer    128     //this is in board RAM.
+/*********Can data structure*********************************************************
+ This structure used to store message received or transmit message in RAM of board, not in MCP2510.
 ************************************************************************************/
 typedef struct {
         unsigned int id;        //message identifiers 
@@ -818,7 +851,7 @@ typedef struct {
 #define TXBUFLEN 8
 #define RXBUFLEN 8
 
-/***************Transmit buffer and receive buffer seperatedly**********/
+/*************** Transmit buffer and receive buffer separately **********/
 struct {
 	CanData TXdata[TXBUFLEN];       /*Transmit buffer,can contain 8 message*/
 	int head; //valid message head.
@@ -840,78 +873,137 @@ struct RXbuffer{
 }Mcp2510_DEV;
 */
 
+//注：我觉得是让2510可以操作、修改
 void enable2510(void);
+//注：我觉得是操作、修改2510完毕了
 void disable2510(void);
-unsigned char Read_Instr_2510(unsigned char R_ADD);
+
+
+
 //Implement Bit Modify Instruction of mcp210
+//注：修改各种状态位，可以用于实现下列各个函数
 void BitModify_Instr_2510(U8 M_ADD, U8 M_MASK, U8 M_DATA);
- //Implement RESET instruction of mcp2510
+
+//Implement WRITE instruction of mcp2510
+void Write_Instr_2510(unsigned char W_ADD, unsigned char W_DATA);
+
+//Implement Request To Send (RTS) Instruction of mcp2510
+//注：which取值0, 1, 2，表示CMD_RTS0/1/2，"Send message in Tx buffer0/1/2 out."
+void RTS_Instr_2510(unsigned char which)
+
+//注：2510的读指令，即为SPI的CMD_READ
+unsigned char Read_Instr_2510(unsigned char R_ADD);
+
+//Implement RESET instruction of mcp2510
 void Reset_Instr_2510(void);
-/********************set Communication parameter********************************************^M
- baud presacle parameter.^M
- BRP[5...0] in CNF1 is for baud rate prescal.^M
- Tq=2*(BRP[5...0]+1)*Tosc.^M
-^M
- Based on the fosc=16M^M
- |sync|propagation|phase segment 1|phase segment 2|^M
- sync=1Tq;propagateion time=2Tq;phase segment 1=7Tq;phase segment 2=6Tq.^M
- Nominal Bit Cycle=(1+2+7+6)Tq=16Tq;^M
- Baud rate prescal=0x04h.Tq=2*(prescal+1)Tosc=10Tosc.^M
- So,Nominal Bit Rate of this set will be 100K bit per second. ^M
+
+//注：2510的Read_Status指令，即为上述定义的SPI的CMD_READS
+unsigned char ReadStatus_Instr_2510(void);
+
+
+
+/********************set Communication parameter********************************************
+ baud presacle parameter.
+ BRP[5...0] in CNF1 is for baud rate prescal.
+ Tq=2*(BRP[5...0]+1)*Tosc.
+
+ Based on the fosc=16M
+ |sync|propagation|phase segment 1|phase segment 2|
+ sync=1Tq;propagateion time=2Tq;phase segment 1=7Tq;phase segment 2=6Tq.
+ Nominal Bit Cycle=(1+2+7+6)Tq=16Tq;
+ Baud rate prescal=0x04h.Tq=2*(prescal+1)Tosc=10Tosc.
+ So,Nominal Bit Rate of this set will be 100K bit per second. 
 ************************************************************************************/
 void MCP2510_SetCommPara(int bit_rate,int tmp_sample);
-/********************Set Configuration Mode******************************************^M
- This will allow mcp2510 enter into CONFIGURATION mode.^M
- Configuration mode is automatically selected after powerup or a reset, or can be en-^M
- tered from any other mode by setting the CANCTRL.REQOP bits to ‘100’.^M
- Configuration mode is the only mode where the following registers are modifiable:^M
- CNF1, CNF2, CNF3^M
- TXRTSCTRL^M
- Acceptance Filter Registers^M
- Acceptance Mask Registers^M
+
+
+/************************************************************************/
+/* 注：MCP2510一共有5个模式，见其pdf的第九章，接下来会涉及到几个mode的设置  */
+/*    1. Configuration Mode                                             */
+/*    2. Normal Mode			                                        */
+/*    3. Sleep Mode						                                */
+/*    4. Listen-Only Mode                                               */
+/*    5. Loopback Mode                                                  */
+/************************************************************************/
+
+/********************Set Configuration Mode******************************************
+ This will allow mcp2510 enter into CONFIGURATION mode.
+ Configuration mode is automatically selected after powerup or a reset, or can be
+ entered from any other mode by setting the CANCTRL.REQOP bits to ‘100’.
+ Configuration mode is the only mode where the following registers are modifiable:
+ CNF1, CNF2, CNF3
+ TXRTSCTRL
+ Acceptance Filter Registers
+ Acceptance Mask Registers
 ************************************************************************************/
+//注：Configuration模式，MCP2510在工作前必须要初始化，就是在Configuration里初始化的。
+//再注：这个在Init_MCP2510()里有调用，就是在一开始进入configuration模式
 void MCP2510_SetConfigMode(void);
+
+//注：Normal模式，用于发送消息
+void MCP2510_SetNormalMode(void);
+
+//注：Sleep模式，睡眠，但是SPI的接口还能访问各个寄存器
 void MCP2510_SetSleepMode(void);
 
-unsigned char ReadStatus_Instr_2510(void);
-void MCP2510_SetLoopbackMode(void);
+//注：Listen-Only模式，用于监听总线上发送的消息
 void MCP2510_SetListenOnlyMode(void);
-void MCP2510_SetNormalMode(void);
-/********************Parse MCP2510 status returned by Read Status instruction********^M
-        bit 0.CANINTF.RX0IF^M
-        bit 1.CANINTF.RX1IF^M
-        bit 2.TXB0CNTRL.TXREQ ^M
-        bit 3.CANINTF.TX0IF ^M
-        bit 4.TXB1CNTRL.TXREQ ^M
-        bit 5.CANINTF.TX1IF ^M
-        bit 6.TXB2CNTRL.TXREQ ^M
-        bit 7.CANINTF.TX2IF ^M
+
+//注：Loopback模式，用于测试，模仿自己收到了消息
+void MCP2510_SetLoopbackMode(void);
+
+/********************Parse MCP2510 status returned by Read Status instruction********
+        bit 0.CANINTF.RX0IF
+        bit 1.CANINTF.RX1IF
+        bit 2.TXB0CNTRL.TXREQ 
+        bit 3.CANINTF.TX0IF 
+        bit 4.TXB1CNTRL.TXREQ 
+        bit 5.CANINTF.TX1IF 
+        bit 6.TXB2CNTRL.TXREQ 
+        bit 7.CANINTF.TX2IF 
 ************************************************************************************/
+//注：根据之前的ReadStatus_Instr_2510()返回的值解释其具体意义
 int Parse_Status(char ret,unsigned care,unsigned wichTXBCNTRL);
+
 //Initialize mcp2510
 void Init_MCP2510(void);
-//Use TXB 0 Send standard frame message to CAN bus^M
-//j:which tx data in TXdata[10];j=0,...9.^M
+
+//Use TXB 0 Send standard frame message to CAN bus
+//j:which tx data in TXdata[10];j=0,...9.
 //k:which tx buffer should be used;k=0,1,2;
+//注：这个就是发送消息的函数了！！！
 int can_data_send(int j,int k);
-//Read out received standard frame message in MCP2510^M
+
+//Read out received standard frame message in MCP2510
 //when poll successfully or interrupt on received a message,read the message from RXB0
+//注：这个就是接收消息的函数了！！！
 int can_data_receive(int which);
+
+//注：应该是罗YG以前写的纯用来测试的函数
 void Test_can_bus(void);
+
+
 
 //WHEN READING AND WRITING SAME BUFFER
 //WHEN USER WHAT TO READ THE rxdata[i],and the driver what to write it ,then it will happen.
 //or then reading one txdata[i],and write by user ,also will happen this .
+//注：这不知道是哪一个函数的注释了，定然是罗YG之前把函数声明删掉或者挪到其它地方去了以后却忘了把注释也弄走
+//再注：大家引以为戒啊！
 
-extern struct semaphore rx_mutex;
-extern struct semaphore tx_mutex;
+
 
 //struct semaphore rx_mutex;
 //struct semaphore tx_mutex;
+//注：modified by lyg & Andriy，上述的版本会报错，应该是罗YG挖的坑
+extern struct semaphore rx_mutex;
+extern struct semaphore tx_mutex;
 
+
+
+//注：这三个宏是用于CAN的IOCTL，见can.c或者can_sensor.c里的can_ioctl函数
 #define IOCTL_MOD_SET 0
 #define IOCTL_GET_MODE 1
 #define IOCTL_GET_CANSTAT 2
 
-#endif
 
+#endif
