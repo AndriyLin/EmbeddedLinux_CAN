@@ -889,7 +889,7 @@ void Write_Instr_2510(unsigned char W_ADD, unsigned char W_DATA);
 
 //Implement Request To Send (RTS) Instruction of mcp2510
 //注：which取值0, 1, 2，表示CMD_RTS0/1/2，"Send message in Tx buffer0/1/2 out."
-void RTS_Instr_2510(unsigned char which)
+void RTS_Instr_2510(unsigned char which);
 
 //注：2510的读指令，即为SPI的CMD_READ
 unsigned char Read_Instr_2510(unsigned char R_ADD);

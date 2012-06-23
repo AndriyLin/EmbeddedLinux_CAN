@@ -43,19 +43,19 @@ int main()
 {
 	sighandler_t prev_handler = NULL;
 
-	//输入发送数据
-	char TXdata[11];
-	TXdata[0] =  0x03;
-	TXdata[1] =  0x00;
-	TXdata[2] =  0x08;
-	TXdata[3] =  0x08;
-	TXdata[4] =  0x07;
-	TXdata[5] =  0x06;
-	TXdata[6] =  0x05;
-	TXdata[7] =  0x04;
-	TXdata[8] =  0x03;
-	TXdata[9] =  0x02;
-	TXdata[10]=  0x01;
+// 	//输入发送数据
+// 	char TXdata[11];
+// 	TXdata[0] =  0x03;
+// 	TXdata[1] =  0x00;
+// 	TXdata[2] =  0x08;
+// 	TXdata[3] =  0x08;
+// 	TXdata[4] =  0x07;
+// 	TXdata[5] =  0x06;
+// 	TXdata[6] =  0x05;
+// 	TXdata[7] =  0x04;
+// 	TXdata[8] =  0x03;
+// 	TXdata[9] =  0x02;
+// 	TXdata[10]=  0x01;
 
 	prev_handler = signal(SIGIO, sig_usr);//等待信号
 	dev = open(DEVICE_NAME, O_RDWR);
@@ -63,6 +63,12 @@ int main()
 	{
 		int oflag;
 		int char_exit = '\0';
+
+		//通过ioctl设置当前的mode，见can.c的can_ioctl()	by Andriy
+		if (ioctl(dev, IOCTL_MOD_SET, OP_LISTEN_ONLY) != 1)
+		{
+			printf("seems set OP_LISTEN_ONLY failed? by Andriy\n");
+		}
 
 		fcntl(dev, F_SETOWN, getpid());//将用户进程号写到设备文件中，让驱动发送信号到用户进程
 		oflag = fcntl(dev, F_GETFL);
@@ -76,7 +82,7 @@ int main()
 				continue;
 			}
 			
-			write(dev, TXdata, 11);//发送数据
+// 			write(dev, TXdata, 11);//发送数据
 			char_exit = getchar();
 		}
 	}
