@@ -64,6 +64,9 @@ int main()
 		int oflag;
 		int char_exit = '\0';
 
+		//设置为loopback模式
+		ioctl(dev, IOCTL_MOD_SET, OP_LOOPBACK);
+
 		fcntl(dev, F_SETOWN, getpid());//将用户进程号写到设备文件中，让驱动发送信号到用户进程
 		oflag = fcntl(dev, F_GETFL);
 		fcntl(dev, F_SETFL, oflag|FASYNC);
@@ -76,7 +79,10 @@ int main()
 				continue;
 			}
 			
-			write(dev, TXdata, 11);//发送数据
+			if (write(dev, TXdata, 11) != 1)//发送数据
+			{
+				printf("write failed?? by Andriy\n");
+			}
 			char_exit = getchar();
 		}
 	}

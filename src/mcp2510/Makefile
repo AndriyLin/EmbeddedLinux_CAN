@@ -7,6 +7,9 @@ can_all.o: can.o
 	$(LD) -r $^ -o $@ 
 all: can_all.o
 
+test:
+	$(CC) -o test.o test.c
+
 ts:
 	$(CC) -o test_send.o test_send.c
  
