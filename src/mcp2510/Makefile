@@ -7,8 +7,11 @@ can_all.o: can.o
 	$(LD) -r $^ -o $@ 
 all: can_all.o
 
-test:
-	$(CC) -o test test.c
+ts:
+	$(CC) -o test_send.o test_send.c
  
+tr:
+	$(CC) -o test_receive.o test_receive.c
+
 clean:
 	rm -rf *.o

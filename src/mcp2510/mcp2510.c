@@ -373,7 +373,7 @@ void Init_MCP2510(void)
 	while(1)
 	{
 		buffer = Read_Instr_2510(CANSTAT);
-		printk("Into Loopback ,CANSTAT register is %x\n",buffer);
+//		printk("Into Loopback ,CANSTAT register is %x\n",buffer);
 
 		//TODO
 		//     if((buffer&OP_MSK) == (OP_LOOPBACK<<5))

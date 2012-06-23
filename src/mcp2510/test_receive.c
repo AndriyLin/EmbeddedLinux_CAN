@@ -64,6 +64,12 @@ int main()
 		int oflag;
 		int char_exit = '\0';
 
+		//通过ioctl设置当前的mode，见can.c的can_ioctl()	by Andriy
+		if (ioctl(dev, IOCTL_MOD_SET, OP_LISTEN_ONLY) != 1)
+		{
+			printf("seems set OP_LISTEN_ONLY failed? by Andriy\n");
+		}
+
 		fcntl(dev, F_SETOWN, getpid());//将用户进程号写到设备文件中，让驱动发送信号到用户进程
 		oflag = fcntl(dev, F_GETFL);
 		fcntl(dev, F_SETFL, oflag|FASYNC);
