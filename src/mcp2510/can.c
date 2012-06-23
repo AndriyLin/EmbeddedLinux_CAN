@@ -278,9 +278,25 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 //read the head data from RXbuffer 
 static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 {
-	//add your own code
-	//TODO 尼玛，居然还有要自己填的代码啊......===================================ATTENTION==========================================
-	return 0;
+	//our OWN code, directly copied from can_sensor.c, by Andriy;
+	ssize_t ret = 0;
+	down_interruptible(&rx_mutex);
+
+	if (RXbuffer.count > 0)
+	{
+		//valid message
+		copy_from_user(buf, (char*) (RXbuffer.RXdata + RXbuffer.head), 16);
+		RXbuffer.head = (RXbuffer.head + 1) % RXBUFLEN;
+		RXbuffer.count--;
+		ret = 16;
+	}
+	else
+	{
+		ret = -1;
+	}
+
+	up(&rx_mutex);
+	return ret;
 }
 
 
