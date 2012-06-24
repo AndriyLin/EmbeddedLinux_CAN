@@ -10,17 +10,11 @@ all: can_all.o
 test:
 	$(CC) -o test.o test.c
 
-send:
-	$(CC) -o send.o send.c
+ts:
+	$(CC) -o test_send.o test_send.c
  
-receive:
-	$(CC) -o receive.o receive.c
-
-bit:
-	$(CC) -o test_bit.o test_bit.c
-
-ori: 
-	$(CC) -o ori.o test_orig.c
+tr:
+	$(CC) -o test_receive.o test_receive.c
 
 clean:
 	rm -rf *.o
