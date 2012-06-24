@@ -23,19 +23,19 @@ void sig_usr()//接收到信号后执行的函数
 	int i = 0;
 
 	signal(SIGIO,sig_usr);	//继续接收信号
-	printf("----receive signal1------\n");
+	printk("----receive signal1------\n");
 	count = read(dev,buf,8); //读取接收到的数据
 	if(count == 8)
 	{
-		printf("receive 8 Bytes\n");
+		printk("receive 8 Bytes\n");
 		for(i = 0; i < 8; i++)
 		{
-			printf("buf[%d] is %x\n",i,buf[i]);
+			printk("buf[%d] is %x\n",i,buf[i]);
 		}
 	}
 	else
 	{
-		printf("read failed! \n");		
+		printk("read failed! \n");
 	}
 }
 
@@ -81,14 +81,14 @@ int main()
 			
 			if (write(dev, TXdata, 11) != 1)//发送数据
 			{
-				printf("write failed?? by Andriy\n");
+				printk("write failed?? by Andriy\n");
 			}
 			char_exit = getchar();
 		}
 	}
 	else
 	{
-		printf("Open failed !\n");
+		printk("Open failed !\n");
 	}
 
 	if (prev_handler != SIG_ERR)

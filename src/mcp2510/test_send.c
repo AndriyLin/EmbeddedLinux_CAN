@@ -25,19 +25,19 @@ typedef void (*sighandler_t)(int);
 // 	int i = 0;
 // 
 // 	signal(SIGIO,sig_usr);	//继续接收信号
-// 	printf("----receive signal1------\n");
+// 	printk("----receive signal1------\n");
 // 	count = read(dev,buf,8); //读取接收到的数据
 // 	if(count == 8)
 // 	{
-// 		printf("receive 8 Bytes\n");
+// 		printk("receive 8 Bytes\n");
 // 		for(i = 0; i < 8; i++)
 // 		{
-// 			printf("buf[%d] is %x\n",i,buf[i]);
+// 			printk("buf[%d] is %x\n",i,buf[i]);
 // 		}
 // 	}
 // 	else
 // 	{
-// 		printf("read failed! \n");		
+// 		printk("read failed! \n");		
 // 	}
 // }
 
@@ -63,14 +63,20 @@ int main()
 	dev = open(DEVICE_NAME, O_RDWR);
 	if(dev>=0)
 	{
+        printk("fd-dev opened\n");
+
 //		int oflag;
 		int char_exit = '\0';
 
 		//通过ioctl设置当前的mode，见can.c的can_ioctl()	by Andriy
 		if (ioctl(dev, IOCTL_MOD_SET, OP_NORMAL) != 1)
 		{
-			printf("seems set OP_NORMAL failed? by Andriy\n");
+            printk("mode set to normal success, by Andriy\n");
 		}
+        else
+        {
+			printk("seems set OP_NORMAL failed? by Andriy\n");
+        }
 
 // 		fcntl(dev, F_SETOWN, getpid());//将用户进程号写到设备文件中，让驱动发送信号到用户进程
 // 		oflag = fcntl(dev, F_GETFL);
@@ -91,7 +97,7 @@ int main()
 	}
 	else
 	{
-		printf("Open failed !\n");
+		printk("Open failed !\n");
 	}
 
 
