@@ -2,19 +2,10 @@
 #include<stdlib.h>
 #include<sys/types.h>
 #include<sys/stat.h>
-//#include<sys/ioctl.h>
+#include<sys/ioctl.h>
 #include<fcntl.h>
 #include<unistd.h>
 #include<signal.h>
-/*
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/types.h>
-#include <linux/fs.h>
-#include <linux/mm.h>
-#include <linux/slab.h>
-#include <linux/delay.h>
-*/
 
 #include "mcp2510.h"
 
@@ -85,30 +76,23 @@ int main()
 		int oflag;
 		int char_exit = '\0';
 		int i;
-		unsigned char to_mode = OP_LOOPBACK;
+		unsigned char to_mode = OP_LISTEN_ONLY;
 		
 		printf("dev > 0, printf entered? by Andriy\n");
-		//printk("dev > 0, printk entered? by Andriy\n");
 
-		printf("preparing to set loopback: %d\n", OP_LOOPBACK);
 		ioctl(dev, IOCTL_GET_MODE, &mode);
-		printf("current mode(to set loopback) is %d, by Andriy\n", mode);
+		printf("current mode(to change mode) is %d, by Andriy\n", mode);
 
 		//设置为loopback模式
-		if (ioctl(dev, IOCTL_MOD_SET, to_mode) == 1)
+		if (ioctl(dev, IOCTL_MOD_SET, &to_mode) == 1)
 		{
-			printf("set listen-only, ioctl success\n");
+			printf("set lo, ioctl called success\n");
 		}
 		else
 		{
-			printf("set listen-only, ioctl returns not 1, so failed\n");
+			printf("set lo, ioctl returns not 1, so failed\n");
 		}
 
-		//for delaying sometime
-		for (i=0; i<1000000;i++)
-		{
-			mode++;
-		}
 		ioctl(dev, IOCTL_GET_MODE, &mode);
 		printf("current mode(mode set) is %d, by Andriy\n", mode);
 

@@ -16,5 +16,8 @@ ts:
 tr:
 	$(CC) -o test_receive.o test_receive.c
 
+bit:
+	$(CC) -o test_bit.o test_bit.c
+
 clean:
 	rm -rf *.o

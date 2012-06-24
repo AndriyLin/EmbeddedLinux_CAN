@@ -230,7 +230,7 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 	switch(cmd)
 	{
 	case IOCTL_MOD_SET:
-		copy_from_user(&tmp,(unsigned char *)arg,1);
+		copy_from_user(&tmp, (unsigned char*)arg,1);
 		printk("============IOCTL MODE SET===============\n");
 		switch(tmp){
 		case OP_NORMAL:
