@@ -339,14 +339,10 @@
 
 /********************Transmit Buffer 0 Control Register******************************
  |Reserved|ABTF|MLOA|TXERR|TXREQ|Reserved|TXP1|TXP0|
- ABTF:message aborted flag 1:message transmit was aborted;0:message completed transm-
- ission successfully.
- MLOA:message lost arbitration.1:message lost arbitration while being sent;0:message 
- not lost arbitration while being sent.
- TXERR:transmit error detected.1:bus error occurred while being transmittin;0:no bus 
- error occurred while being transmittin.
- TXREQ:message transmit request.1:buffer currently pending transmission(locked);0:buf-
- fer is not locked.When transmit ok,or abort ,this bit will be set 0.
+ ABTF:message aborted flag 1:message transmit was aborted;0:message completed transmission successfully.
+ MLOA:message lost arbitration.1:message lost arbitration while being sent;0:message not lost arbitration while being sent.
+ TXERR:transmit error detected.1:bus error occurred while being transmittin;0:no bus error occurred while being transmittin.
+ TXREQ:message transmit request.1:buffer currently pending transmission(locked);0:buffer is not locked.When transmit ok,or abort ,this bit will be set 0.
  TXP[1...0]:transmit buffer priority.
  TXP[1...0]=00,means lowest message priority.
  TXP[1...0]=01,means low immediate message priority.
@@ -367,25 +363,18 @@
 /********************Receive Buffer 0 Control Register******************************
  |Reserved|RXM1|RXM0|Reserved|RXRTR|BUKT|BUKT1|FILHIT0|
  RXM[1...0]:receive buffer operate mode
- RXM[1...0]=00:receive all valid messages using either standard or extended identifi-
- rs that meet their criteria.
- RXM[1...0]=01:receive valid messages using only standard identifiers that meet crit-
- eria.
- RXM[1...0]=10:receive valid messages using only extended identifiers that meet crit-
- eria.
+ RXM[1...0]=00:receive all valid messages using either standard or extended identifiers that meet their criteria.
+ RXM[1...0]=01:receive valid messages using only standard identifiers that meet criteria.
+ RXM[1...0]=10:receive valid messages using only extended identifiers that meet criteria.
  RXM[1...0]=11:turn mask/filter off,receive any message.
 
- RXRTR:receive remote transfer request.1:received remote transter request;0:No recei-
- ved remote transfer request.
+ RXRTR:receive remote transfer request.1:received remote transter request;0:No received remote transfer request.
 
- BUKT:rollover enable.1:RXB0 message will be rollover and be written into RXB1 if R-
- XB0 is full;0:rollover disabled.
+ BUKT:rollover enable.1:RXB0 message will be rollover and be written into RXB1 if RXB0 is full;0:rollover disabled.
  BUKT1:only used internally in MCP2510.
 
- FILHIT0:filter hit,indicates which acceptance filter enabled reception of message.
- 1:acceptance filter 1;0:acceptance filter 0;
- If a message rollover from RXB0 to RXB1,then FILHIT0 reflects the filter(RXF0 RX fi-
- lter 0) that accepted the message that rolled over.
+ FILHIT0:filter hit,indicates which acceptance filter enabled reception of message. 1:acceptance filter 1;0:acceptance filter 0;
+ If a message rollover from RXB0 to RXB1,then FILHIT0 reflects the filter(RXF0 RX filter 0) that accepted the message that rolled over.
 ***********************************************************************************/
 #define RXB0CTRL	0X60     //Receive Buffer 0 Control Register
 #define RXM0_MSK 0x60
@@ -396,16 +385,12 @@
 /********************Receive Buffer 1 Control Register*******************************
  |Reserved|RXM1|RXM0|Reserved|RXRTR|FILHIT2|FILHIT1|FILHIT0|
  RXM[1...0]:receive buffer operate mode
- RXM[1...0]=00:receive all valid messages using either standard or extended identifi-
- rs that meet their criteria.
- RXM[1...0]=01:receive valid messages using only standard identifiers that meet crit-
- eria.
- RXM[1...0]=10:receive valid messages using only extended identifiers that meet crit-
- eria.
+ RXM[1...0]=00:receive all valid messages using either standard or extended identifiers that meet their criteria.
+ RXM[1...0]=01:receive valid messages using only standard identifiers that meet criteria.
+ RXM[1...0]=10:receive valid messages using only extended identifiers that meet criteria.
  RXM[1...0]=11:turn mask/filer off,receive any message.
 
- RXRTR:receive remote transfer request.1:received remote transter request;0:No recei-
- ved remote transfer request.
+ RXRTR:receive remote transfer request.1:received remote transter request;0:No received remote transfer request.
 
  FILHIT[2...0]:filter hit,indicates which acceptance filter enabled reception of message.
  FILHIT[2...0]=101:acceptance filter 5.
@@ -428,8 +413,7 @@
 #define RXM0SIDH	0X20  
 /********************Acceptance Filter Mask Standard Identifier Low for RXB0********
  |SID2|SID1|SID0|Reserved|Reserved|Reserved|EID17|EID16|
- The mask bits for <2:0> of standard frame identifiers of receive buffer 0.
- EID[17...16] is the mask for extended identifier portion.
+ The mask bits for <2:0> of standard frame identifiers of receive buffer 0.  EID[17...16] is the mask for extended identifier portion.
 ************************************************************************************/
 #define RXM0SIDL	0X21
 
@@ -441,8 +425,7 @@
 #define RXM1SIDH	0X24	 
 /********************Acceptance Filter Mask Standard Identifier Low for RXB1********
  |SID2|SID1|SID0|Reserved|Reserved|Reserved|EID17|EID16|
- The mask bits for <2:0> of standard frame identifiers of receive buffer 1.
- EID[17...16] is the mask for extended identifier portion.
+ The mask bits for <2:0> of standard frame identifiers of receive buffer 1. EID[17...16] is the mask for extended identifier portion.
 ************************************************************************************/
 #define RXM1SIDL	0X25
 
@@ -700,11 +683,8 @@
 #define RXB0SIDH	0X61
 /********************Receive Buffer 0 Standard Identifier Low**********************
  |SID2|SID1|SID0|SRR|IDE|¡ª|EID17|EID16|
- SRR: Standard Frame Remote Transmit Request Bit (valid only if IDE bit = ¡®0¡¯).1 =
- Standard Frame Remote Transmit Request Received.0 = Standard Data Frame Recieved.
- IDE: Extended Identifier Flag.This bit indicates whether the received message was a 
- Standard or an Extended Frame.1 = Received message was an Extended Frame.0 = Receiv-
- ed message was a Standard Frame.
+ SRR: Standard Frame Remote Transmit Request Bit (valid only if IDE bit = ¡®0¡¯).1 = Standard Frame Remote Transmit Request Received.0 = Standard Data Frame Recieved.
+ IDE: Extended Identifier Flag.This bit indicates whether the received message was a Standard or an Extended Frame.1 = Received message was an Extended Frame.0 = Received message was a Standard Frame.
 ************************************************************************************/
 #define RXB0SIDL		0X62
 /********************Receive Buffer 0 Extended Identifier Mid**********************
@@ -717,8 +697,7 @@
 #define RXB0EIDL		0X64
 /********************Receive Buffer 0 Data Length Code**********************
  |¡ª|RTR|RB1|RB0|DLC3|DLC2|DLC1|DLC0|
- RTR: Extended Frame Remote Transmission Request Bit (valid only when RXBnSIDL.IDE=1).
- 1 = Extended Frame Remote Transmit Request Received.0= Extended Data Frame Received.
+ RTR: Extended Frame Remote Transmission Request Bit (valid only when RXBnSIDL.IDE=1). 1 = Extended Frame Remote Transmit Request Received.0= Extended Data Frame Received.
  RB1: Reserved Bit 1.
  RB0: Reserved Bit 0.	
 ************************************************************************************/
@@ -743,11 +722,8 @@
 #define RXB1SIDH	0X71
 /********************Receive Buffer 1 Standard Identifier Low**********************
  |SID2|SID1|SID0|SRR|IDE|¡ª|EID17|EID16|
- SRR: Standard Frame Remote Transmit Request Bit (valid only if IDE bit = ¡®0¡¯).1 =
- Standard Frame Remote Transmit Request Received.0 = Standard Data Frame Recieved.
- IDE: Extended Identifier Flag.This bit indicates whether the received message was a 
- Standard or an Extended Frame.1 = Received message was an Extended Frame.0 = Receiv-
- ed message was a Standard Frame.
+ SRR: Standard Frame Remote Transmit Request Bit (valid only if IDE bit = ¡®0¡¯).1 = Standard Frame Remote Transmit Request Received.0 = Standard Data Frame Recieved.
+ IDE: Extended Identifier Flag.This bit indicates whether the received message was a Standard or an Extended Frame.1 = Received message was an Extended Frame.0 = Received message was a Standard Frame.
 ************************************************************************************/
 #define RXB1SIDL		0X72
 /********************Receive Buffer 1 Extended Identifier Mid**********************

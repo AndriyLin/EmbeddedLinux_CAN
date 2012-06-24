@@ -315,10 +315,10 @@ void Init_MCP2510(void)
 
 	//set RX filter 0,1 for RXB0
 	// |SID10|SID9|SID8|SID7|SID6|SID5|SID4|SID3|
-	Write_Instr_2510(RXF0SIDH,0xff);
+	Write_Instr_2510(RXF0SIDH,0xff);	//ff: 1111-1111, all SID is acceptable
 	// |SID2|SID1|SID0|Reserved|EXIDE|Reserved|EID17|EID16|
 	//EXIDE=1 only extended frame;0:only standard frame.
-	Write_Instr_2510(RXF0SIDL,0xe0);
+	Write_Instr_2510(RXF0SIDL,0xe0);	//e0: 1110-0000, only std frame, EID is 0
 
 	Write_Instr_2510(RXF1SIDH,0xff);
 	Write_Instr_2510(RXF1SIDL,0xe0);
@@ -326,8 +326,8 @@ void Init_MCP2510(void)
 
 	//for RXB1 说得对啊
 	//set RX mask 1 for RXB1 
-	Write_Instr_2510(RXM1SIDH,0xff); 	//00 to ff
-	Write_Instr_2510(RXM1SIDL,0x00);    
+	Write_Instr_2510(RXM1SIDH,0xff); 	//00 to ff 
+	Write_Instr_2510(RXM1SIDL,0xff);    
 
 	//set RX filter 2,3,4,5 for RXB1 	  
 	Write_Instr_2510(RXF2SIDH,0xff);	//ff 代表都有，改成01等其他之后应该是代表接受特定地址来的东西
@@ -341,6 +341,11 @@ void Init_MCP2510(void)
 
 	Write_Instr_2510(RXF5SIDH,0xff);
 	Write_Instr_2510(RXF5SIDL,0xe0);
+
+
+	Write_Instr_2510(TXB0SIDH, 0xff);	//用来与RX配对？TXB1用不到，暂时没有写
+	Write_Instr_2510(TXB0SIDL, 0xe0);
+
 /*
 	//for RXB1 说得对啊
 	//set RX mask 1 for RXB1 
@@ -424,11 +429,13 @@ int can_data_send(int j,int k)
 	length = p->dlc;
 	//length=5;//for testing
 
-	printk("in can_data_send:length=%d\n",length);
+	printk("in can_data_send:length=%d, in can_data_send()\n",length);
 	if(length>8) length=8;
 
-	Write_Instr_2510(TXB0SIDH+k*0x10,((p->id)&0x03ff)>>3);
-	Write_Instr_2510(TXB0SIDL+k*0x10,((p->id)&0x07)>>5);
+//	Write_Instr_2510(TXB0SIDH+k*0x10,((p->id)&0x03ff)>>3); //+k*10只是从0x31->0x41，ZHUANGB
+//	Write_Instr_2510(TXB0SIDL+k*0x10,((p->id)&0x07)>>5);
+	Write_Instr_2510(TXB0SIDH+k*0x10, 0xff);
+	Write_Instr_2510(TXB0SIDL+k*0x10, 0xe0);
 	Write_Instr_2510(TXB0DLC+k*0x10,length);
 	if(p->rxRTR==1)
 		BitModify_Instr_2510(TXB0DLC+k*0x10,0x40, 0x40);
@@ -458,7 +465,7 @@ int can_data_send(int j,int k)
 
 	//DEBUG: read the txb0 to 
 	//get the DLC of txb0
-	printk("data length is %d",0x0f&(Read_Instr_2510(TXB0DLC)));
+	printk("data length is %d\n",0x0f&(Read_Instr_2510(TXB0DLC)));
 	if((0x40&Read_Instr_2510(TXB0DLC))>0) 
 		printk("this is a remote transmit request\n");
 
@@ -498,6 +505,8 @@ int can_data_receive(int which)
 		tmp = Read_Instr_2510(RXB0DLC);
 	if(which==1)
 		tmp = Read_Instr_2510(RXB1DLC);
+	
+	mdelay(10);
 
 	printk("in can_data_receive:tmp=%x\n",tmp);
 
@@ -505,11 +514,10 @@ int can_data_receive(int which)
 	p->dlc=(tmp&0x0f);
 	length=p->dlc;
 
-
 	printk("in can_data_receive:length=%x\n",length);
 	if(length>8) length=8;
 
-	if((tmp&0x40)>0)
+	if((tmp&0x40)>0) //0100-0000: 1-> RTR bit
 		p->rxRTR=1;
 	else
 		p->rxRTR=0;
@@ -523,13 +531,14 @@ int can_data_receive(int which)
 	if(which==1)
 		spi_tx_data(RXB1D0);
 
+	printk("SPI receiving RxData:\n");
 	for(i = 0; i<length; i++)
 	{
 		//according to page22-7 of s3c2410 data-sheet, in normal mode if only want to receive data
 		//and you should send dummy 0xFF data.
 		spi_tx_data(0xff);
 		p->data[i] = rSPRDAT0;
-		printk("SPI receiving Rxdata[%d] is %x\n",i,p->data[i]);
+		printk("[%d]: %x, ",i,p->data[i]);
 	}  	
 	disable2510(); 		//Unselect the chip	
 

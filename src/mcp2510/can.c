@@ -35,11 +35,16 @@
 #include "mcp2510.c"
 
 #define INT_DEV_NAME  "candev"
-#define INT_DEV_MAJOR 240
+#define CANDEV_CLASS  "candev_class"
+//#define INT_DEV_MAJOR 240
 #define SIG_MYINT 33
 #define TIME_STEP  (1000)
 
 #define IRQ_EINT2 2
+
+
+static int iic_major;
+static int dev_handler;
 
 
 struct fasync_struct *can_async_queue;
@@ -58,10 +63,12 @@ void can_interrupt(int irq,void *d,struct pt_regs *regs)
 	//Write_2510(CANINTE, 0x00); //close interrupt in mcp2510 //it is not true ,and 
 	//will induce message lost. luo 20110401
 
-	printk("in can interrupting---1--\n");
+	printk("<0>""in can interrupting---1--\n");
 
 	buffer = Read_Instr_2510(CANINTF);
-	/*
+	
+
+/*
 	#define MERRF 0X80
 	#define WAKIF 0X40
 	#define ERRIF 0X20
@@ -230,7 +237,7 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 	switch(cmd)
 	{
 	case IOCTL_MOD_SET:
-		copy_from_user(&tmp,(unsigned char *)arg + 3,1);
+		copy_from_user(&tmp,(unsigned char *)arg,1);
 		printk("============IOCTL MODE SET===============\n");
 		switch(tmp){
 		case OP_NORMAL:
@@ -263,7 +270,7 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 
 		printk("============IOCTL GET MODE===============\n");
 		tmp= Read_Instr_2510(CANSTAT);
-		tmp=((tmp&0xe0)>>1);
+		tmp=((tmp&0xe0)>>5);
 		copy_to_user((unsigned char *)arg,&tmp,1);
 		break;
 	case IOCTL_GET_CANSTAT:
@@ -280,7 +287,6 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 		return -1;
 		break;
 	}
-	//modified by Andriy, useless code below
 	return 1;
 }
 
@@ -289,20 +295,38 @@ static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 {
 	//our OWN code, directly copied from can_sensor.c, by Andriy;
 	ssize_t ret = 0;
+	unsigned char buffer;
 	printk("prepare to can_data_receive()\n");
 	down_interruptible(&rx_mutex);
 
-	printk("after down_interrupt, to can_data_receive()\n");
 	can_data_receive(0);
+/*
+	buffer = Read_Instr_2510(CANINTF);
+	mdelay(100);
+	if((buffer & RX1IF)>0)
+	{
+		printk("mcp2510 RX1 BUFFER BECOMING FULL\n");
+		can_data_receive(1);
+		BitModify_Instr_2510(CANINTF, RX1IF, 0);
+		kill_fasync(&can_async_queue,SIGIO,POLL_OUT);
+	}
+	if((buffer & RX0IF)>0)
+	{
+		printk("mcp2510 RX0 BUFFER BECOMING FULL\n");
+		can_data_receive(0);
+		BitModify_Instr_2510(CANINTF, RX0IF, 0);
+		kill_fasync(&can_async_queue,SIGIO,POLL_OUT);
+	}
+	*/
 
 	if (RXbuffer.count > 0)
 	{
 		CanData* pData = RXbuffer.RXdata + RXbuffer.head;
 		char* msg_data = (char*) pData->data;
-		ret = (ssize_t) pData->dlc;
+		ret = pData->dlc;
 
 		//valid message
-		copy_to_user(buf, msg_data, (unsigned long)ret);
+		copy_to_user(buf, msg_data, ret);
 		RXbuffer.head = (RXbuffer.head + 1) % RXBUFLEN;
 		RXbuffer.count--;
 
@@ -401,6 +425,8 @@ int init_module(void)
 	unsigned int result; 
 	int flags;
 
+	printk("in init_module()\n");
+
 	/********************set timer******************************************************/
 	/*	int_timer=kmalloc(sizeof(struct timer_list),GFP_KERNEL);
 	if(int_timer==NULL)return -1;
@@ -421,7 +447,15 @@ int init_module(void)
 		return result;
 	}
 
-	devfs_register(NULL,INT_DEV_NAME,DEVFS_FL_AUTO_DEVNUM,INT_DEV_MAJOR,
+	iic_major = devfs_register_chrdev(0, CANDEV_CLASS, &candev_fops);
+	printk("传说中的iic_major: %d\n", iic_major);
+	if (iic_major < 0)
+	{
+		printk("iic_major cannot register.\n");
+		return result;
+	}
+
+	dev_handler = devfs_register(NULL,INT_DEV_NAME,DEVFS_FL_AUTO_DEVNUM, iic_major,
 		1,S_IFCHR|S_IRUGO|S_IWUGO,&candev_fops,NULL);
 
 	//result=register_chrdev(INT_DEV_MAJOR,INT_DEV_NAME,&candev_fops); 
@@ -450,7 +484,9 @@ void cleanup_module(void)
 		kfree(int_timer);
 	}
 
-	unregister_chrdev(INT_DEV_MAJOR,INT_DEV_NAME);
+	unregister_chrdev(iic_major, INT_DEV_NAME);
+	//unregister_chrdev(INT_DEV_MAJOR,INT_DEV_NAME);
+	devfs_unregister(dev_handler);
 	printk("rmmod successfully\n");
 }
 
