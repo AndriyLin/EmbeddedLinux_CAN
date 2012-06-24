@@ -10,9 +10,7 @@
 
 #include "mcp2510.h"
 
-//#define DEVICE_NAME "/dev/tmpdev"
 #define DEVICE_NAME "/dev/candev"
-
 
 
 char buf[111];
@@ -34,7 +32,7 @@ void sig_usr()//接收到信号后执行的函数
 		printf("buf[%d] is %x\n",i,buf[i]);
 	}
 
-	signal(SIGIO, sig_usr);	//继续接收信号
+//	signal(SIGIO, sig_usr);	//继续接收信号
 }
 
 int main()
@@ -79,11 +77,11 @@ int main()
 		int oflag;
 		int char_exit = '\0';
 		unsigned char to_mode = OP_NORMAL;
-		//unsigned char to_mode = OP_LOOPBACK;
 		unsigned char mode = -1;
-
 		int i = 0;
 		int count = 0;
+
+		to_mode = OP_LOOPBACK;
 		
 		ioctl(dev, IOCTL_GET_MODE, &mode);
 		printf("current mode(to change mode) is %d, by Andriy\n", mode);
@@ -113,12 +111,19 @@ int main()
 		{
 			if (char_exit == '\n' || char_exit == '\r')
 			{
+				printf("preparing to getchar()\n");
+				char_exit = getchar();
 				continue;
 			}
-			
+		
 			if (write(dev, TXdata, 16) != 1)//发送数据
 			{
 				printf("write failed?? by Andriy\n");
+			}
+			else
+			{
+				//directly kill a signal
+				kill(getpid(), SIGIO);
 			}
 /*
 			printf("preparing to read!!!\n");

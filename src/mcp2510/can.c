@@ -290,9 +290,10 @@ static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 {
 	//our OWN code, directly copied from can_sensor.c, by Andriy; then modified according to struct CanData & RXbuffer in mcp2510.h
 	ssize_t ret = 0;
+	return 0;
 	down_interruptible(&rx_mutex);
 
-	printk("in can_read()\n");
+//	printk("in can_read()\n");
 
 	if (RXbuffer.count > 0)
 	{
@@ -305,11 +306,11 @@ static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 		RXbuffer.head = (RXbuffer.head + 1) % RXBUFLEN;
 		RXbuffer.count--;
 
-		printk("==count is %d, copied by Andriy==\n", pos->dlc);
+//		printk("==count is %d, copied by Andriy==\n", pos->dlc);
 	}
 	else
 	{
-		printk("==count is 0, no msgs in RXbuffer==\n");
+//		printk("==count is 0, no msgs in RXbuffer==\n");
 		ret = -1;
 	}
 
