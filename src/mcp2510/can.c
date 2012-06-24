@@ -230,7 +230,7 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 	switch(cmd)
 	{
 	case IOCTL_MOD_SET:
-		copy_from_user(&tmp,(unsigned char *)arg + 3,1);
+		copy_from_user(&tmp,(unsigned char *)arg,1);
 		printk("============IOCTL MODE SET===============\n");
 		switch(tmp){
 		case OP_NORMAL:
@@ -263,7 +263,8 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 
 		printk("============IOCTL GET MODE===============\n");
 		tmp= Read_Instr_2510(CANSTAT);
-		tmp=((tmp&0xe0)>>1);
+		//modified by Andriy, from '>>1' to '>>5'
+		tmp=((tmp&0xe0)>>5);
 		copy_to_user((unsigned char *)arg,&tmp,1);
 		break;
 	case IOCTL_GET_CANSTAT:
