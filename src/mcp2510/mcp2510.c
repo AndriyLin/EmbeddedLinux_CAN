@@ -310,36 +310,35 @@ void Init_MCP2510(void)
 	//set filter mask to 0, means we don't do filter
 	//for RXB0
 	//set RX mask 0 for RXB0 
-	Write_Instr_2510(RXM0SIDH,0xff);    	//00 to ff
+	Write_Instr_2510(RXM0SIDH,0x00);    
 	Write_Instr_2510(RXM0SIDL,0x00);
 
 	//set RX filter 0,1 for RXB0
 	// |SID10|SID9|SID8|SID7|SID6|SID5|SID4|SID3|
-	Write_Instr_2510(RXF0SIDH,0x01);	//ff to 01
+	Write_Instr_2510(RXF0SIDH,0xff);
 	// |SID2|SID1|SID0|Reserved|EXIDE|Reserved|EID17|EID16|
 	//EXIDE=1 only extended frame;0:only standard frame.
 	Write_Instr_2510(RXF0SIDL,0xe0);
 
-	Write_Instr_2510(RXF1SIDH,0x01);	//ff to 01
+	Write_Instr_2510(RXF1SIDH,0xff);
 	Write_Instr_2510(RXF1SIDL,0xe0);
 
 	//for RXB1
 	//set RX mask 1 for RXB1 
-	Write_Instr_2510(RXM1SIDH,0xff);     	//00 to ff
+	Write_Instr_2510(RXM0SIDH,0x00);     
 	Write_Instr_2510(RXM1SIDL,0x00);    
 
-
 	//set RX filter 2,3,4,5 for RXB1 	  
-	Write_Instr_2510(RXF2SIDH,0x01);	//ff to 01
-	Write_Instr_2510(RXF2SIDL,0x00);	//e0 to 00
+	Write_Instr_2510(RXF2SIDH,0xff);
+	Write_Instr_2510(RXF2SIDL,0xe0);
 
-	Write_Instr_2510(RXF3SIDH,0x01);	//ff to 01
+	Write_Instr_2510(RXF3SIDH,0xff);
 	Write_Instr_2510(RXF3SIDL,0xe0);
 
-	Write_Instr_2510(RXF4SIDH,0x01);	//ff to 01
+	Write_Instr_2510(RXF4SIDH,0xff);
 	Write_Instr_2510(RXF4SIDL,0xe0);
 
-	Write_Instr_2510(RXF5SIDH,0x01);	//ff to 01
+	Write_Instr_2510(RXF5SIDH,0xff);
 	Write_Instr_2510(RXF5SIDL,0xe0);
 
 	//Set RXB0CTRL Register
@@ -350,9 +349,9 @@ void Init_MCP2510(void)
 		01 = Receive only valid messages with standard identifiers that meet filter criteria
 		00 = Receive all valid messages using either standard or extended identifiers that meet filter criteria
 	*/
-	BitModify_Instr_2510(RXB0CTRL, RXM0_MSK|RX0RTR|RX0BUKT | RX0FILHIT0, 0X20|RX0RTR|RX0BUKT | RX0FILHIT0);
+	BitModify_Instr_2510(RXB0CTRL, RXM0_MSK|RX0RTR|RX0BUKT, 0X20|RX0RTR|RX0BUKT);
 	//Set RXB1CTRL Register
-	BitModify_Instr_2510(RXB1CTRL, RXM1_MSK|RX1RTR | RX1FILHIT_MSK, 0X20|RX1RTR | RX1FILHIT_MSK);
+	BitModify_Instr_2510(RXB1CTRL, RXM1_MSK|RX1RTR, 0X20|RX1RTR);
 
 	/****************initialize parameter in configuration mode end*****************/
 
@@ -366,16 +365,18 @@ void Init_MCP2510(void)
 	//Set to Normal Mode
 	MCP2510_SetNormalMode();
 
+	//TODO 注：要测试，改这里
 	//for testing,set it to Loopback mode
-//	MCP2510_SetLoopbackMode(); 
+	//MCP2510_SetLoopbackMode(); 
 
 	//Wait into Normal Mode （注：如果是在测试，则为等待进入Loopback模式）
 	while(1)
 	{
 		buffer = Read_Instr_2510(CANSTAT);
-		printk("Into Loopback ,CANSTAT register is %x\n",buffer);
+//		printk("Into Loopback ,CANSTAT register is %x\n",buffer);
 
-		//if((buffer&OP_MSK) == (OP_LOOPBACK<<5))
+		//TODO
+		//     if((buffer&OP_MSK) == (OP_LOOPBACK<<5))
 		if((buffer&OP_MSK) == (OP_NORMAL<<5))
 		{
 			printk("In the NORMAL Mode\n");
@@ -406,7 +407,6 @@ int can_data_send(int j,int k)
 	printk("in can_data_send:length=%d\n",length);
 	if(length>8) length=8;
 
-	//, 0x00
 	Write_Instr_2510(TXB0SIDH+k*0x10,((p->id)&0x03ff)>>3);
 	Write_Instr_2510(TXB0SIDL+k*0x10,((p->id)&0x07)>>5);
 	Write_Instr_2510(TXB0DLC+k*0x10,length);
@@ -438,7 +438,7 @@ int can_data_send(int j,int k)
 
 	//DEBUG: read the txb0 to 
 	//get the DLC of txb0
-	printk("data length is %d\n", 0x0f&(Read_Instr_2510(TXB0DLC)));
+	printk("data length is %d",0x0f&(Read_Instr_2510(TXB0DLC)));
 	if((0x40&Read_Instr_2510(TXB0DLC))>0) 
 		printk("this is a remote transmit request\n");
 
