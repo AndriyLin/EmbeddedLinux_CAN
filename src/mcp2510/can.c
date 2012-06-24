@@ -230,23 +230,28 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 	switch(cmd)
 	{
 	case IOCTL_MOD_SET:
-		copy_from_user(&tmp,(unsigned char *)arg,1);
+		copy_from_user(&tmp,(unsigned char *)arg + 3,1);
 		printk("============IOCTL MODE SET===============\n");
 		switch(tmp){
 		case OP_NORMAL:
 			MCP2510_SetNormalMode();
+			printk("==set normal done==\n");
 			return 1;
 		case OP_LISTEN_ONLY:
 			MCP2510_SetListenOnlyMode();
+			printk("==set listen only done==\n");
 			return 1;
 		case OP_LOOPBACK:
 			MCP2510_SetLoopbackMode();
+			printk("==set loopback done==\n");
 			return 1;
 		case OP_SLEEP:
 			MCP2510_SetSleepMode();
+			printk("==set sleep done==\n");
 			return 1;
 		case OP_CONFIG:
 			MCP2510_SetConfigMode();
+			printk("==set config done==\n");
 			return 1;
 		default:
 			return -1;
@@ -269,10 +274,14 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 		tmp= ReadStatus_Instr_2510();
 		copy_to_user((unsigned char*)arg,&tmp,1);
 		break;
+
 	default:
+		//modified by Andriy, the return value is inconsistent
+		return -1;
 		break;
 	}
-	return 0;
+	//modified by Andriy, useless code below
+	return 1;
 }
 
 //read the head data from RXbuffer 

@@ -2,10 +2,19 @@
 #include<stdlib.h>
 #include<sys/types.h>
 #include<sys/stat.h>
-#include<sys/ioctl.h>
+//#include<sys/ioctl.h>
 #include<fcntl.h>
 #include<unistd.h>
 #include<signal.h>
+/*
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/types.h>
+#include <linux/fs.h>
+#include <linux/mm.h>
+#include <linux/slab.h>
+#include <linux/delay.h>
+*/
 
 #include "mcp2510.h"
 
@@ -23,24 +32,26 @@ void sig_usr()//接收到信号后执行的函数
 	int i = 0;
 
 	signal(SIGIO,sig_usr);	//继续接收信号
-	printk("----receive signal1------\n");
+	printf("----receive signal, in sig_usr()------\n");
 	count = read(dev,buf,8); //读取接收到的数据
 	if(count == 8)
 	{
-		printk("receive 8 Bytes\n");
+		printf("receive 8 Bytes\n");
 		for(i = 0; i < 8; i++)
 		{
-			printk("buf[%d] is %x\n",i,buf[i]);
+			printf("buf[%d] is %x\n",i,buf[i]);
 		}
 	}
 	else
 	{
-		printk("read failed! \n");
+		printf("read failed! count != 8 \n");
 	}
 }
 
 int main()
 {
+	unsigned char mode = -1;
+
 	sighandler_t prev_handler = NULL;
 
 	//输入发送数据
@@ -57,20 +68,55 @@ int main()
 	TXdata[9] =  0x02;
 	TXdata[10]=  0x01;
 
+	printf("prepare to open dev\n");
 	prev_handler = signal(SIGIO, sig_usr);//等待信号
+	if (prev_handler == SIG_ERR)
+	{
+		printf("returns SIG_ERR, signal failed\n");
+	}
+	else
+	{
+		printf("signal successed\n");
+	}
+
 	dev = open(DEVICE_NAME, O_RDWR);
 	if(dev>=0)
 	{
 		int oflag;
 		int char_exit = '\0';
+		int i;
+		unsigned char to_mode = OP_LOOPBACK;
+		
+		printf("dev > 0, printf entered? by Andriy\n");
+		//printk("dev > 0, printk entered? by Andriy\n");
+
+		printf("preparing to set loopback: %d\n", OP_LOOPBACK);
+		ioctl(dev, IOCTL_GET_MODE, &mode);
+		printf("current mode(to set loopback) is %d, by Andriy\n", mode);
 
 		//设置为loopback模式
-		ioctl(dev, IOCTL_MOD_SET, OP_LOOPBACK);
+		if (ioctl(dev, IOCTL_MOD_SET, to_mode) == 1)
+		{
+			printf("set listen-only, ioctl success\n");
+		}
+		else
+		{
+			printf("set listen-only, ioctl returns not 1, so failed\n");
+		}
+
+		//for delaying sometime
+		for (i=0; i<1000000;i++)
+		{
+			mode++;
+		}
+		ioctl(dev, IOCTL_GET_MODE, &mode);
+		printf("current mode(mode set) is %d, by Andriy\n", mode);
 
 		fcntl(dev, F_SETOWN, getpid());//将用户进程号写到设备文件中，让驱动发送信号到用户进程
 		oflag = fcntl(dev, F_GETFL);
 		fcntl(dev, F_SETFL, oflag|FASYNC);
 
+		printf("preparing to getchar()\n");
 		char_exit = getchar();
 		while(char_exit != 'q')
 		{
@@ -81,14 +127,19 @@ int main()
 			
 			if (write(dev, TXdata, 11) != 1)//发送数据
 			{
-				printk("write failed?? by Andriy\n");
+				printf("write failed?? by Andriy\n");
 			}
+			else
+			{
+				printf("write success by Andriy\n");
+			}
+			printf("preparing to getchar()\n");
 			char_exit = getchar();
 		}
 	}
 	else
 	{
-		printk("Open failed !\n");
+		printf("Open failed !\n");
 	}
 
 	if (prev_handler != SIG_ERR)
