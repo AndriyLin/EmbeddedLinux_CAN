@@ -309,9 +309,9 @@ void Init_MCP2510(void)
 
 	//set filter mask to 0, means we don't do filter
 	//for RXB0
-	//set RX mask 0 for RXB0 
-	Write_Instr_2510(RXM0SIDH,0x00);    
-	Write_Instr_2510(RXM0SIDL,0x00);
+	//set RX mask 0 for RXB0 	//真的吗？？mcp2510.pdf上4.3说00是用filter，11是没有使用filter
+	Write_Instr_2510(RXM0SIDH,0xff);   //00 to ff 
+	Write_Instr_2510(RXM0SIDL,0xff);	//00 to ff
 
 	//set RX filter 0,1 for RXB0
 	// |SID10|SID9|SID8|SID7|SID6|SID5|SID4|SID3|
@@ -323,9 +323,28 @@ void Init_MCP2510(void)
 	Write_Instr_2510(RXF1SIDH,0xff);
 	Write_Instr_2510(RXF1SIDL,0xe0);
 
-	//for RXB1
+
+	//for RXB1 说得对啊
 	//set RX mask 1 for RXB1 
-	Write_Instr_2510(RXM0SIDH,0x00);     
+	Write_Instr_2510(RXM1SIDH,0xff); 	//00 to ff
+	Write_Instr_2510(RXM1SIDL,0x00);    
+
+	//set RX filter 2,3,4,5 for RXB1 	  
+	Write_Instr_2510(RXF2SIDH,0xff);	//ff 代表都有，改成01等其他之后应该是代表接受特定地址来的东西
+	Write_Instr_2510(RXF2SIDL,0xe0);
+
+	Write_Instr_2510(RXF3SIDH,0xff);
+	Write_Instr_2510(RXF3SIDL,0xe0);
+
+	Write_Instr_2510(RXF4SIDH,0xff);
+	Write_Instr_2510(RXF4SIDL,0xe0);
+
+	Write_Instr_2510(RXF5SIDH,0xff);
+	Write_Instr_2510(RXF5SIDL,0xe0);
+/*
+	//for RXB1 说得对啊
+	//set RX mask 1 for RXB1 
+	Write_Instr_2510(RXM1SIDH,0x00);     
 	Write_Instr_2510(RXM1SIDL,0x00);    
 
 	//set RX filter 2,3,4,5 for RXB1 	  
@@ -340,6 +359,7 @@ void Init_MCP2510(void)
 
 	Write_Instr_2510(RXF5SIDH,0xff);
 	Write_Instr_2510(RXF5SIDL,0xe0);
+*/
 
 	//Set RXB0CTRL Register
 	//bit 6-5: RXM<1:0>: Receive Buffer Operating Mode
@@ -349,9 +369,9 @@ void Init_MCP2510(void)
 		01 = Receive only valid messages with standard identifiers that meet filter criteria
 		00 = Receive all valid messages using either standard or extended identifiers that meet filter criteria
 	*/
-	BitModify_Instr_2510(RXB0CTRL, RXM0_MSK|RX0RTR|RX0BUKT, 0X20|RX0RTR|RX0BUKT);
+	BitModify_Instr_2510(RXB0CTRL, RXM0_MSK|RX0RTR|RX0BUKT | RX0FILHIT0, 0X20|RX0RTR|RX0BUKT | RX0FILHIT0);
 	//Set RXB1CTRL Register
-	BitModify_Instr_2510(RXB1CTRL, RXM1_MSK|RX1RTR, 0X20|RX1RTR);
+	BitModify_Instr_2510(RXB1CTRL, RXM1_MSK|RX1RTR | RX1FILHIT_MSK, 0X20|RX1RTR | RX1FILHIT_MSK);
 
 	/****************initialize parameter in configuration mode end*****************/
 

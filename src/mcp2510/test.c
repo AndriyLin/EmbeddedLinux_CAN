@@ -6,15 +6,6 @@
 #include<fcntl.h>
 #include<unistd.h>
 #include<signal.h>
-/*
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/types.h>
-#include <linux/fs.h>
-#include <linux/mm.h>
-#include <linux/slab.h>
-#include <linux/delay.h>
-*/
 
 #include "mcp2510.h"
 
@@ -34,17 +25,11 @@ void sig_usr()//接收到信号后执行的函数
 	signal(SIGIO,sig_usr);	//继续接收信号
 	printf("----receive signal, in sig_usr()------\n");
 	count = read(dev,buf,8); //读取接收到的数据
-	if(count == 8)
+	printf("read count = %d \n", count);
+
+	for(i = 0; i < count; i++)
 	{
-		printf("receive 8 Bytes\n");
-		for(i = 0; i < 8; i++)
-		{
-			printf("buf[%d] is %x\n",i,buf[i]);
-		}
-	}
-	else
-	{
-		printf("read failed! count != 8 \n");
+		printf("buf[%d] is %x\n",i,buf[i]);
 	}
 
 //	signal(SIGIO, sig_usr);	//继续接收信号
@@ -62,12 +47,19 @@ int main()
 	TXdata[1] =  0x00;
 	TXdata[2] =  0x08;
 	TXdata[3] =  0x08;
+
 	TXdata[4] =  0x07;
 	TXdata[5] =  0x06;
 	TXdata[6] =  0x05;
 	TXdata[7] =  0x04;
 	TXdata[8] =  0x03;
 	TXdata[9] =  0x02;
+	TXdata[10]=  0x01;
+	TXdata[10]=  0x01;
+
+	TXdata[10]=  0x01;
+	TXdata[10]=  0x01;
+	TXdata[10]=  0x01;
 	TXdata[10]=  0x01;
 
 	printf("prepare to open dev\n");
@@ -103,18 +95,19 @@ int main()
 		//设置为loopback模式
 		if (ioctl(dev, IOCTL_MOD_SET, to_mode) == 1)
 		{
-			printf("set listen-only, ioctl success\n");
+			printf("set loopback, ioctl success\n");
 		}
 		else
 		{
-			printf("set listen-only, ioctl returns not 1, so failed\n");
+			printf("set loopback, ioctl returns not 1, so failed\n");
 		}
 
-		//for delaying sometime
+	/*	//for delaying sometime
 		for (i=0; i<1000000;i++)
 		{
 			mode++;
 		}
+		*/
 		ioctl(dev, IOCTL_GET_MODE, &mode);
 		printf("current mode(mode set) is %d, by Andriy\n", mode);
 
@@ -133,13 +126,10 @@ int main()
 				continue;
 			}
 		
-			if (write(dev, TXdata, 16) != 1)//发送数据
+			i = write(dev, TXdata, 16);	//发送数据
+			printf("write result: %d\n", i);
+			if (i == 1)
 			{
-				printf("write failed?? by Andriy\n");
-			}
-			else
-			{
-				//directly kill a signal
 				kill(getpid(), SIGIO);
 			}
 /*

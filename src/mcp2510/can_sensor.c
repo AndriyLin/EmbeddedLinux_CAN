@@ -183,6 +183,7 @@ static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 {
 	ssize_t ret=0;
 
+	printk("in can_read() in can_sensor.c\n");
 	down_interruptible(&rx_mutex);
 
 	if(RXbuffer.count>0) //valid message

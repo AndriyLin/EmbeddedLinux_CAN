@@ -150,7 +150,7 @@ void can_interrupt(int irq,void *d,struct pt_regs *regs)
 void inttimer_timeover(unsigned long arg)
 {
 	//unsigned char buffer;
-	printk("\n===============In timer--ing==================\n");
+//	printk("\n===============In timer--ing==================\n");
 
 	//	buffer = ReadStatus_Instr_2510();
 
@@ -289,23 +289,28 @@ static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 {
 	//our OWN code, directly copied from can_sensor.c, by Andriy;
 	ssize_t ret = 0;
-	return 0;
+	printk("prepare to can_data_receive()\n");
 	down_interruptible(&rx_mutex);
 
-//	printk("in can_read()\n");
+	printk("after down_interrupt, to can_data_receive()\n");
+	can_data_receive(0);
 
 	if (RXbuffer.count > 0)
 	{
+		CanData* pData = RXbuffer.RXdata + RXbuffer.head;
+		char* msg_data = (char*) pData->data;
+		ret = (ssize_t) pData->dlc;
+
 		//valid message
-		copy_from_user(buf, (char*) (RXbuffer.RXdata + RXbuffer.head), 16);
+		copy_to_user(buf, msg_data, (unsigned long)ret);
 		RXbuffer.head = (RXbuffer.head + 1) % RXBUFLEN;
 		RXbuffer.count--;
 
-//		printk("==count is %d, copied by Andriy==\n", pos->dlc);
+		printk("==count is %d, copied by Andriy==\n", ret);
 	}
 	else
 	{
-//		printk("==count is 0, no msgs in RXbuffer==\n");
+		printk("==count is 0, no msgs in RXbuffer==\n");
 		ret = -1;
 	}
 
