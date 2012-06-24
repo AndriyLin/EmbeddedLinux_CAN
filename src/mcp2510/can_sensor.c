@@ -301,7 +301,7 @@ int init_module(void)
 	disable_irq(IRQ_EINT2);
 	enable_irq(IRQ_EINT2);	
 	local_irq_restore(flags);
-	result = request_irq(IRQ_EINT2,&can_interrupt,SA_INTERRUPT,"can",NULL);
+	result = request_irq(IRQ_EINT2,&can_interrupt,SA_INTERRUPT,"candev",NULL);
 	if (result)
 	{
 		printk("Can't get assigned irq %d,result=%d\n",IRQ_EINT2,result);

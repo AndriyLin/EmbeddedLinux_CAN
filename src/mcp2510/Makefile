@@ -19,5 +19,8 @@ receive:
 bit:
 	$(CC) -o test_bit.o test_bit.c
 
+ori: 
+	$(CC) -o ori.o test_orig.c
+
 clean:
 	rm -rf *.o

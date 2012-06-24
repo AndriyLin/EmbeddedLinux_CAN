@@ -6,10 +6,13 @@
 #include<fcntl.h>
 #include<unistd.h>
 #include<signal.h>
+#include <errno.h>
 
 #include "mcp2510.h"
 
+//#define DEVICE_NAME "/dev/tmpdev"
 #define DEVICE_NAME "/dev/candev"
+
 
 
 char buf[111];
@@ -22,7 +25,6 @@ void sig_usr()//接收到信号后执行的函数
 	int count = 0;
 	int i = 0;
 
-	signal(SIGIO, sig_usr);	//继续接收信号
 	printf("----receive signal, in sig_usr()------\n");
 
 	count = read(dev,buf,8); //读取接收到的数据
@@ -31,6 +33,8 @@ void sig_usr()//接收到信号后执行的函数
 	{
 		printf("buf[%d] is %x\n",i,buf[i]);
 	}
+
+	signal(SIGIO, sig_usr);	//继续接收信号
 }
 
 int main()
@@ -74,7 +78,8 @@ int main()
 	{
 		int oflag;
 		int char_exit = '\0';
-		unsigned char to_mode = OP_LOOPBACK;
+		unsigned char to_mode = OP_NORMAL;
+		//unsigned char to_mode = OP_LOOPBACK;
 		unsigned char mode = -1;
 
 		int i = 0;
@@ -92,9 +97,15 @@ int main()
 		ioctl(dev, IOCTL_GET_MODE, &mode);
 		printf("current mode(mode set) is %d, by Andriy\n", mode);
 
-		fcntl(dev, F_SETOWN, getpid());//将用户进程号写到设备文件中，让驱动发送信号到用户进程
+		if (fcntl(dev, F_SETOWN, getpid()) == -1) //将用户进程号写到设备文件中，让驱动发送信号到用户进程
+		{
+			printf("fcntl(SETOWN) failed\n");
+		}
 		oflag = fcntl(dev, F_GETFL);
-		fcntl(dev, F_SETFL, oflag|FASYNC);
+		if (fcntl(dev, F_SETFL, oflag|FASYNC) == -1)
+		{
+			printf("fcntl(SETFL) failed\n");
+		}
 
 		printf("preparing to getchar()\n");
 		char_exit = getchar();
@@ -118,13 +129,14 @@ int main()
 				printf("buf[%d] is %x\n",i,buf[i]);
 			}
 */
+
 			printf("preparing to getchar()\n");
 			char_exit = getchar();
 		}
 	}
 	else
-	{
-		printf("Open failed !\n");
+	{	
+		printf("Open failed ! %d \n", errno);
 	}
 
 	if (prev_handler != SIG_ERR)
