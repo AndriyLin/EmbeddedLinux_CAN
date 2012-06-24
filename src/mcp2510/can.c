@@ -150,7 +150,7 @@ void can_interrupt(int irq,void *d,struct pt_regs *regs)
 void inttimer_timeover(unsigned long arg)
 {
 	//unsigned char buffer;
-//	printk("\n===============In timer--ing==================\n");
+	printk("\n===============In timer--ing==================\n");
 
 	//	buffer = ReadStatus_Instr_2510();
 
@@ -230,7 +230,7 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 	switch(cmd)
 	{
 	case IOCTL_MOD_SET:
-		copy_from_user(&tmp, (unsigned char*)arg,1);
+		copy_from_user(&tmp,(unsigned char *)arg + 3,1);
 		printk("============IOCTL MODE SET===============\n");
 		switch(tmp){
 		case OP_NORMAL:
@@ -263,8 +263,7 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 
 		printk("============IOCTL GET MODE===============\n");
 		tmp= Read_Instr_2510(CANSTAT);
-		//modified by Andriy, from '>>1' to '>>5'
-		tmp=((tmp&0xe0)>>5);
+		tmp=((tmp&0xe0)>>1);
 		copy_to_user((unsigned char *)arg,&tmp,1);
 		break;
 	case IOCTL_GET_CANSTAT:
@@ -288,7 +287,7 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 //read the head data from RXbuffer 
 static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 {
-	//our OWN code, directly copied from can_sensor.c, by Andriy; then modified according to struct CanData & RXbuffer in mcp2510.h
+	//our OWN code, directly copied from can_sensor.c, by Andriy;
 	ssize_t ret = 0;
 	return 0;
 	down_interruptible(&rx_mutex);
@@ -298,11 +297,7 @@ static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 	if (RXbuffer.count > 0)
 	{
 		//valid message
-		//¿¿¿¿¿Candata¿¿¿¿dlc¿¿¿¿¿data
-		CanData* pos = RXbuffer.RXdata + RXbuffer.head;
-		copy_from_user(buf, (char*) pos->data, pos->dlc);
-		ret = pos->dlc;
-
+		copy_from_user(buf, (char*) (RXbuffer.RXdata + RXbuffer.head), 16);
 		RXbuffer.head = (RXbuffer.head + 1) % RXBUFLEN;
 		RXbuffer.count--;
 
@@ -325,25 +320,21 @@ static ssize_t can_write(struct file *filp,const char *buf,size_t count,loff_t *
 
 	down_interruptible(&tx_mutex);
 
-	//printk("TXbuffer.head = %d, count = %d", TXbuffer.head, TXbuffer.count);
 	if(TXbuffer.count<TXBUFLEN) 
 		TXbuffer.count++;
 	else return -1;
 
-//	printk("TXbuffer.head = %d, count = %d", TXbuffer.head, TXbuffer.count);
-	copy_from_user(TXbuffer.TXdata+(TXbuffer.head+TXbuffer.count-1)%TXBUFLEN,(PCanData *)buf, sizeof(CanData));
+	copy_from_user(TXbuffer.TXdata+(TXbuffer.head+TXbuffer.count-1)%TXBUFLEN,(PCanData *)buf,16);
 
 	printk("In can_write:TXdata tail is %d\n",TXbuffer.TXdata[(TXbuffer.head+TXbuffer.count-1)%TXBUFLEN].dlc);
 
 	//TXdata[0].dlc=count;
 
-//	printk("TXbuffer.head = %d, count = %d", TXbuffer.head, TXbuffer.count);
 	//Transmit data to Bus
 	ret=can_data_send(TXbuffer.head,0);
 
 	TXbuffer.head=(TXbuffer.head+1)%TXBUFLEN;
 	TXbuffer.count--;
-//	printk("TXbuffer.head = %d, count = %d", TXbuffer.head, TXbuffer.count);
 
 	up(&tx_mutex);
 
@@ -418,7 +409,7 @@ int init_module(void)
 	disable_irq(IRQ_EINT2);
 	enable_irq(IRQ_EINT2);	
 	local_irq_restore(flags);
-	result = request_irq(IRQ_EINT2,&can_interrupt,SA_INTERRUPT,"candev",NULL);
+	result = request_irq(IRQ_EINT2,&can_interrupt,SA_INTERRUPT,"can",NULL);
 	if (result)
 	{
 		printk("Can't get assigned irq %d,result=%d\n",IRQ_EINT2,result);
@@ -436,6 +427,7 @@ int init_module(void)
 	address_map();
 
 	//init the mutex semaphore
+	init_MUTEX(&rx_mutex);
 	init_MUTEX(&tx_mutex);
 
 	return 0;
