@@ -150,7 +150,7 @@ void can_interrupt(int irq,void *d,struct pt_regs *regs)
 void inttimer_timeover(unsigned long arg)
 {
 	//unsigned char buffer;
-	printk("\n===============In timer--ing==================\n");
+//	printk("\n===============In timer--ing==================\n");
 
 	//	buffer = ReadStatus_Instr_2510();
 
@@ -288,20 +288,28 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 //read the head data from RXbuffer 
 static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 {
-	//our OWN code, directly copied from can_sensor.c, by Andriy;
+	//our OWN code, directly copied from can_sensor.c, by Andriy; then modified according to struct CanData & RXbuffer in mcp2510.h
 	ssize_t ret = 0;
 	down_interruptible(&rx_mutex);
+
+	printk("in can_read()\n");
 
 	if (RXbuffer.count > 0)
 	{
 		//valid message
-		copy_from_user(buf, (char*) (RXbuffer.RXdata + RXbuffer.head), 16);
+		//¿¿¿¿¿Candata¿¿¿¿dlc¿¿¿¿¿data
+		CanData* pos = RXbuffer.RXdata + RXbuffer.head;
+		copy_from_user(buf, (char*) pos->data, pos->dlc);
+		ret = pos->dlc;
+
 		RXbuffer.head = (RXbuffer.head + 1) % RXBUFLEN;
 		RXbuffer.count--;
-		ret = 16;
+
+		printk("==count is %d, copied by Andriy==\n", pos->dlc);
 	}
 	else
 	{
+		printk("==count is 0, no msgs in RXbuffer==\n");
 		ret = -1;
 	}
 
@@ -316,21 +324,25 @@ static ssize_t can_write(struct file *filp,const char *buf,size_t count,loff_t *
 
 	down_interruptible(&tx_mutex);
 
+	//printk("TXbuffer.head = %d, count = %d", TXbuffer.head, TXbuffer.count);
 	if(TXbuffer.count<TXBUFLEN) 
 		TXbuffer.count++;
 	else return -1;
 
-	copy_from_user(TXbuffer.TXdata+(TXbuffer.head+TXbuffer.count-1)%TXBUFLEN,(PCanData *)buf,16);
+//	printk("TXbuffer.head = %d, count = %d", TXbuffer.head, TXbuffer.count);
+	copy_from_user(TXbuffer.TXdata+(TXbuffer.head+TXbuffer.count-1)%TXBUFLEN,(PCanData *)buf, sizeof(CanData));
 
 	printk("In can_write:TXdata tail is %d\n",TXbuffer.TXdata[(TXbuffer.head+TXbuffer.count-1)%TXBUFLEN].dlc);
 
 	//TXdata[0].dlc=count;
 
+//	printk("TXbuffer.head = %d, count = %d", TXbuffer.head, TXbuffer.count);
 	//Transmit data to Bus
 	ret=can_data_send(TXbuffer.head,0);
 
 	TXbuffer.head=(TXbuffer.head+1)%TXBUFLEN;
 	TXbuffer.count--;
+//	printk("TXbuffer.head = %d, count = %d", TXbuffer.head, TXbuffer.count);
 
 	up(&tx_mutex);
 
@@ -423,7 +435,6 @@ int init_module(void)
 	address_map();
 
 	//init the mutex semaphore
-	init_MUTEX(&rx_mutex);
 	init_MUTEX(&tx_mutex);
 
 	return 0;

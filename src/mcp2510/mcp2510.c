@@ -436,7 +436,7 @@ int can_data_send(int j,int k)
 
 	//DEBUG: read the txb0 to 
 	//get the DLC of txb0
-	printk("data length is %d",0x0f&(Read_Instr_2510(TXB0DLC)));
+	printk("data length is %d\n", 0x0f&(Read_Instr_2510(TXB0DLC)));
 	if((0x40&Read_Instr_2510(TXB0DLC))>0) 
 		printk("this is a remote transmit request\n");
 
