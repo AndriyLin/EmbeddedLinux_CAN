@@ -40,7 +40,8 @@
 #define SIG_MYINT 33
 #define TIME_STEP  (1000)
 
-#define IRQ_EINT2 2
+//#define IRQ_EINT2 2	//maybe useless, try EINT1 instead
+#define IRQ_EINT1 1
 
 
 static int iic_major;
@@ -58,7 +59,7 @@ void can_interrupt(int irq,void *d,struct pt_regs *regs)
 {	
 	unsigned char buffer,tmp;
 
-	disable_irq(IRQ_EINT2);
+	disable_irq(IRQ_EINT1);
 
 	//Write_2510(CANINTE, 0x00); //close interrupt in mcp2510 //it is not true ,and 
 	//will induce message lost. luo 20110401
@@ -150,7 +151,7 @@ void can_interrupt(int irq,void *d,struct pt_regs *regs)
 	SRCPND &= (~0x00000002);
 	INTPND = INTPND;
 
-	enable_irq(IRQ_EINT2);
+	enable_irq(IRQ_EINT1);
 }
 
 //注：计时器到时候了
@@ -386,9 +387,9 @@ int can_release(struct inode *inode,struct file *filp)
 	/********************set mcp2510 into reset mode************************************/
 	Reset_Instr_2510();
 	/********************close the interrupt of ENT1*************************************
-	In case the glitch of EINT2 intervene the system.
+	In case the glitch of EINT1 intervene the system.
 	************************************************************************************/
-	disable_irq(IRQ_EINT2);  
+	disable_irq(IRQ_EINT1);  
 
 	can_fasync(-1,filp,0);
 	return 0;
@@ -434,16 +435,16 @@ int init_module(void)
 	inttimer_register(int_timer,TIME_STEP);
 	*/
 
-	/********************set irq ofr EINT2**********************************************/
+	/********************set irq ofr EINT1**********************************************/
 	local_irq_save(flags);
-	set_external_irq(IRQ_EINT2, EXT_FALLING_EDGE, GPIO_PULLUP_DIS);
-	disable_irq(IRQ_EINT2);
-	enable_irq(IRQ_EINT2);	
+	set_external_irq(IRQ_EINT1, EXT_FALLING_EDGE, GPIO_PULLUP_DIS);
+	disable_irq(IRQ_EINT1);
+	enable_irq(IRQ_EINT1);	
 	local_irq_restore(flags);
-	result = request_irq(IRQ_EINT2,&can_interrupt,SA_INTERRUPT,"can",NULL);
+	result = request_irq(IRQ_EINT1,&can_interrupt,SA_INTERRUPT,"can",NULL);
 	if (result)
 	{
-		printk("Can't get assigned irq %d,result=%d\n",IRQ_EINT2,result);
+		printk("Can't get assigned irq %d,result=%d\n",IRQ_EINT1,result);
 		return result;
 	}
 
@@ -475,8 +476,8 @@ int init_module(void)
 //注：卸载驱动 rmmmod
 void cleanup_module(void)
 {
-	disable_irq(IRQ_EINT2);
-	free_irq(IRQ_EINT2, NULL);
+	disable_irq(IRQ_EINT1);
+	free_irq(IRQ_EINT1, NULL);
 
 	if(int_timer!=NULL)
 	{
