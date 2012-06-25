@@ -9,8 +9,8 @@
 
 #include "mcp2510.h"
 
-//#define DEVICE_NAME "/dev/candev"
-#define DEVICE_NAME "/dev/tmpdev"
+#define DEVICE_NAME "/dev/candev"
+//#define DEVICE_NAME "/dev/tmpdev"
 
 
 char buf[111];
@@ -25,15 +25,13 @@ void sig_usr()//接收到信号后执行的函数
 
 	signal(SIGIO,sig_usr);	//继续接收信号
 	printf("----receive signal, in sig_usr()------\n");
-	while ((count = read(dev, buf, 8)) != -1)//读取接收到的数据
+	count = read(dev, buf, 8);
+	printf("read count = %d \n", count);
+//	这里暂时不用read很多次，因为什么呢？没有那么多东西发数据，不过如果有多个数据可能会触发多个SIGIO吧，不确定
+/*	while ((count = read(dev, buf, 8)) != -1)//读取接收到的数据
 	{
 		printf("read count = %d \n", count);
-	}
-
-	for(i = 0; i < count; i++)
-	{
-//		printf("buf[%d] is %x\n",i,buf[i]);
-	}
+	} */
 
 //	signal(SIGIO, sig_usr);	//继续接收信号
 }

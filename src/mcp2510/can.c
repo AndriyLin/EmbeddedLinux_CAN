@@ -300,25 +300,7 @@ static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 	printk("prepare to can_data_receive()\n");
 	down_interruptible(&rx_mutex);
 
-	can_data_receive(0);
-/*
-	buffer = Read_Instr_2510(CANINTF);
-	mdelay(100);
-	if((buffer & RX1IF)>0)
-	{
-		printk("mcp2510 RX1 BUFFER BECOMING FULL\n");
-		can_data_receive(1);
-		BitModify_Instr_2510(CANINTF, RX1IF, 0);
-		kill_fasync(&can_async_queue,SIGIO,POLL_OUT);
-	}
-	if((buffer & RX0IF)>0)
-	{
-		printk("mcp2510 RX0 BUFFER BECOMING FULL\n");
-		can_data_receive(0);
-		BitModify_Instr_2510(CANINTF, RX0IF, 0);
-		kill_fasync(&can_async_queue,SIGIO,POLL_OUT);
-	}
-	*/
+	//can_data_receive(0);
 
 	if (RXbuffer.count > 0)
 	{
