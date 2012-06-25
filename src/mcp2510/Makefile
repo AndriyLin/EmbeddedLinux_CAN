@@ -5,7 +5,8 @@ CFLAGS = -D__KERNEL__ -I/home/b092837_linxuankang/embedded_linux_tmp/source_dir/
 
 can_all.o: can.o 
 	$(LD) -r $^ -o $@ 
-all: can_all.o
+
+all: can_all.o test send receive
 
 test:
 	$(CC) -o test.o test.c
