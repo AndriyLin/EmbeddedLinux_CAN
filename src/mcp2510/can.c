@@ -300,7 +300,7 @@ static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 	printk("prepare to can_data_receive()\n");
 	down_interruptible(&rx_mutex);
 
-	can_data_receive(0);
+//	can_data_receive(0);
 /*
 	buffer = Read_Instr_2510(CANINTF);
 	mdelay(100);

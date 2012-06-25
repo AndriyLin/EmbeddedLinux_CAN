@@ -390,7 +390,7 @@ void Init_MCP2510(void)
 	//Set to Normal Mode
 	MCP2510_SetNormalMode();
 
-	//TODO 注：要测试，改这里
+	//注：要测试，改这里，不用改这里的，通过ioctl可以动态修改mode
 	//for testing,set it to Loopback mode
 	//MCP2510_SetLoopbackMode(); 
 
@@ -400,7 +400,6 @@ void Init_MCP2510(void)
 		buffer = Read_Instr_2510(CANSTAT);
 //		printk("Into Loopback ,CANSTAT register is %x\n",buffer);
 
-		//TODO
 		//     if((buffer&OP_MSK) == (OP_LOOPBACK<<5))
 		if((buffer&OP_MSK) == (OP_NORMAL<<5))
 		{
