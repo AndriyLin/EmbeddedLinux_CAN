@@ -17,5 +17,18 @@ send:
 receive:
 	$(CC) -o receive.o receive.c
 
+
+final: mcu door light
+
+mcu:
+	$(CC) -o mcu.o mcu.c
+
+door:
+	$(CC) -o door.o door.c
+
+light:
+	$(CC) -o light.o light.c
+
+
 clean:
 	rm -rf *.o
