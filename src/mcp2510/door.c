@@ -21,7 +21,6 @@ int dev;
 void sig_usr()//接收到信号后执行的函数
 {	
 	int count = 0;
-	int i = 0;
 
 	signal(SIGIO,sig_usr);	//继续接收信号
 	printf("----receive signal, in sig_usr()------\n");
@@ -33,9 +32,7 @@ void sig_usr()//接收到信号后执行的函数
 
 int main()
 {
-	unsigned char mode = -1;
 	sighandler_t prev_handler = NULL;
-
 	prev_handler = signal(SIGIO, sig_usr);//等待信号
 	if (prev_handler == SIG_ERR)
 	{
@@ -43,23 +40,17 @@ int main()
 	}
 	else
 	{
-		printf("signal successed\n");
+		printf("signal success\n");
 	}
 
 	dev = open(DEVICE_NAME, O_RDWR);
 	if(dev>=0)
 	{
-		int oflag;
 		int char_exit = '\0';
 		unsigned char to_mode = OP_NORMAL;
 		unsigned char mode = -1;
-		int i = 0;
-		int count = 0;
 		
-		printf("preparing to set loopback: %d\n", OP_LOOPBACK);
 		ioctl(dev, IOCTL_GET_MODE, &mode);
-		printf("current mode(to set loopback) is %d, by Andriy\n", mode);
-		
 		if (mode != to_mode)
 		{
 			//设置为to_mode模式

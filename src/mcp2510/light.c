@@ -18,25 +18,60 @@ char buf[111];
 int dev;
 
 
+void show_light_on()
+{
+	//TODO
+	printf("in show_light_on()\n");
+}
+
+void show_light_off()
+{
+	//TODO
+	printf("in show_light_off()\n");
+}
+
 void sig_usr()//接收到信号后执行的函数
 {	
 	int count = 0;
-	int i = 0;
+	char* data = buf;
 
 	signal(SIGIO,sig_usr);	//继续接收信号
 	printf("----receive signal, in sig_usr()------\n");
 	count = read(dev, buf, 8);
 	printf("read count = %d \n", count);
 
-	//TODO
+	if (data[EL_BIT_TO] != EL_LIGHT)
+	{
+		//not sent to LIGHT
+		return;
+	}
+
+	if (data[EL_BIT_FROM] == EL_MCU && data[EL_BIT_OP] == EL_OP_MCU_SET_LIGHT_ONOFF)
+	{
+		switch (data[EL_BIT_PARAM])
+		{
+		case EL_LIGHT_ON:
+			show_light_on();
+			break;
+			
+		case EL_LIGHT_OFF:
+			show_light_off();
+			break;
+
+		default:
+			break;
+		}
+	}
 }
 
+void show_help()
+{
+	printf("to make light always on or not, enter \'o\'\n");
+}
 
 int main()
 {
-	unsigned char mode = -1;
 	sighandler_t prev_handler = NULL;
-
 	prev_handler = signal(SIGIO, sig_usr);//等待信号
 	if (prev_handler == SIG_ERR)
 	{
@@ -44,23 +79,18 @@ int main()
 	}
 	else
 	{
-		printf("signal successed\n");
+		printf("signal success\n");
 	}
 
 	dev = open(DEVICE_NAME, O_RDWR);
 	if(dev>=0)
 	{
-		int oflag;
 		int char_exit = '\0';
 		unsigned char to_mode = OP_NORMAL;
 		unsigned char mode = -1;
-		int i = 0;
-		int count = 0;
-		
-		printf("preparing to set loopback: %d\n", OP_LOOPBACK);
+		char data[8];
+
 		ioctl(dev, IOCTL_GET_MODE, &mode);
-		printf("current mode(to set loopback) is %d, by Andriy\n", mode);
-		
 		if (mode != to_mode)
 		{
 			//设置为to_mode模式
@@ -74,15 +104,33 @@ int main()
 			}
 		}
 
+		show_help();
 		while((char_exit = getchar()) != 'q')
 		{
 			if (char_exit == '\n' || char_exit == '\r')
 			{
-				//TODO
+				continue;
 			}
-			else
+
+			switch(char_exit)
 			{
+			{
+			case 'o':
+				//Set always on or set not always on
+				data[EL_BIT_TO] = EL_MCU;
+				data[EL_BIT_FROM] = EL_LIGHT;
+				data[EL_BIT_OP] = EL_OP_LIGHT_SET_ALWAYS_ON;
+				data[EL_BIT_PARAM] = 0;	//useless
+
+				send(dev, data); 
+				break;
 			}
+
+			default:
+				break;
+			}
+
+			show_help();
 		}
 	}
 	else
