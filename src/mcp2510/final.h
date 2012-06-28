@@ -1,6 +1,7 @@
 #ifndef _EL_CONSTANTS_H_
 #define _EL_CONSTANTS_H_
 
+
 //Car status
 #define EL_CAR_STOP 0
 #define EL_CAR_STARTING 1
@@ -15,5 +16,10 @@
 #define EL_DOOR_OPEN 6
 #define EL_DOOR_CLOSE 7
 #define EL_DOOR_LOCKED 8
+
+//data数组的长度为8！
+void send(int dev, char* data);
+
+typedef void (*sighandler_t)(int);
 
 #endif
