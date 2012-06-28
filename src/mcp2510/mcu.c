@@ -8,6 +8,7 @@
 #include<signal.h>
 
 #include "mcp2510.h"
+#include "constants.h"
 
 //#define DEVICE_NAME "/dev/candev"
 #define DEVICE_NAME "/dev/tmpdev"
