@@ -86,7 +86,7 @@ int main()
 //		to_mode = OP_LOOPBACK;
 		
 		printf("dev > 0, printf entered? by Andriy\n");
-		//printk("dev > 0, printk entered? by Andriy\n");
+		////printk("dev > 0, //printk entered? by Andriy\n");
 
 		printf("preparing to set loopback: %d\n", OP_LOOPBACK);
 		ioctl(dev, IOCTL_GET_MODE, &mode);

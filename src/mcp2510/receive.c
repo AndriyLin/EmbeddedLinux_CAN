@@ -88,7 +88,7 @@ int main()
 		to_mode = OP_NORMAL;
 		
 		printf("dev > 0, printf entered? by Andriy\n");
-		//printk("dev > 0, printk entered? by Andriy\n");
+		////printk("dev > 0, //printk entered? by Andriy\n");
 
 		printf("preparing to set loopback: %d\n", to_mode);
 		ioctl(dev, IOCTL_GET_MODE, &mode);

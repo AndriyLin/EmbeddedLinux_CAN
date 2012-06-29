@@ -49,11 +49,13 @@ void sig_usr()//接收到信号后执行的函数
 			switch (data[EL_BIT_PARAM])
 			{
 				case EL_LIGHT_ON:
-					show_light_on();
+//					show_light_on();
+					show_light_off();
 					break;
 
 				case EL_LIGHT_OFF:
-					show_light_off();
+//					show_light_off();
+					show_light_on();
 					break;
 
 				default:

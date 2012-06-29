@@ -20,7 +20,7 @@ char buf[111];
 int dev;
 
 int light_always_on = FALSE;
-int light_status = EL_LIGHT_OFF;
+int light_status = 0;
 int light_display_status;
 
 int main_door_status = EL_DOOR_CLOSE;
@@ -104,6 +104,8 @@ void onLight(char op, char param)
 void modify_light_semaphore(int value)
 {
 	light_status -= value;
+	printf("ligit_semaphore = %d\n", light_status);
+	printf("light_always_on = %d\n", light_always_on);
 	light_display_status = (light_always_on > 0) || (light_status > 0);
 
 	tell_light();

@@ -70,11 +70,11 @@ void pwr1_dic_interrupt(int irq,void *d,struct pt_regs *regs)
 void inttimer_timeover(unsigned long arg)
 {
 	//unsigned char buffer;
-	printk("\n===============In timer--ing==================\n");
+	//printk("\n===============In timer--ing==================\n");
 
 	//	buffer = ReadStatus_Instr_2510();
 
-	//	printk("Now can state is %x\n",buffer);
+	//	//printk("Now can state is %x\n",buffer);
 
 	/*	if((buffer&RX0IF)>0)
 	{
@@ -137,7 +137,7 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 	{
 	case IOCTL_MOD_SET:
 		copy_from_user(&tmp,(unsigned char *)arg,1);
-		printk("============IOCTL MODE SET===============\n");
+		//printk("============IOCTL MODE SET===============\n");
 		switch(tmp){
 		case OP_NORMAL:
 			MCP2510_SetNormalMode();
@@ -162,7 +162,7 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 		if(!arg)
 			return -1;
 
-		printk("============IOCTL GET MODE===============\n");
+		//printk("============IOCTL GET MODE===============\n");
 		tmp= Read_Instr_2510(CANSTAT);
 		tmp=((tmp&0xe0)>>1);
 		copy_to_user((unsigned char *)arg,&tmp,1);
@@ -171,7 +171,7 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 		if(!arg)
 			return -1;
 
-		printk("============IOCTL GET CANSTAT===============\n");
+		//printk("============IOCTL GET CANSTAT===============\n");
 		tmp= ReadStatus_Instr_2510();
 		copy_to_user((unsigned char*)arg,&tmp,1);
 		break;
@@ -185,7 +185,7 @@ static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 {
 	ssize_t ret=0;
 
-	printk("in can_read() in can_sensor.c\n");
+	//printk("in can_read() in can_sensor.c\n");
 	down_interruptible(&rx_mutex);
 
 	if(RXbuffer.count>0) //valid message
@@ -218,7 +218,7 @@ static ssize_t can_write(struct file *filp,const char *buf,size_t count,loff_t *
 
 	copy_from_user(TXbuffer.TXdata+(TXbuffer.head+TXbuffer.count-1)%TXBUFLEN,(PCanData *)buf,16);
 
-	printk("In can_write:TXdata tail is %d\n",TXbuffer.TXdata[(TXbuffer.head+TXbuffer.count-1)%TXBUFLEN].dlc);
+	//printk("In can_write:TXdata tail is %d\n",TXbuffer.TXdata[(TXbuffer.head+TXbuffer.count-1)%TXBUFLEN].dlc);
 
 	//TXdata[0].dlc=count;
 
@@ -264,10 +264,10 @@ void test(void)
 	unsigned char buffer;
 	spi_tx_data(0xff);
 	buffer= rSPRDAT0;
-	printk("\n====buffer %x======\n",buffer);
+	//printk("\n====buffer %x======\n",buffer);
 	spi_tx_data(0x34);
 	buffer= rSPRDAT0;
-	printk("\n====buffer %x======\n",buffer);
+	//printk("\n====buffer %x======\n",buffer);
 }
 
 /************************************************************************/
@@ -307,7 +307,7 @@ int init_module(void)
 	result = request_irq(IRQ_EINT1,&can_interrupt,SA_INTERRUPT,"can",NULL);
 	if (result)
 	{
-		printk("Can't get assigned irq %d,result=%d\n",IRQ_EINT1,result);
+		//printk("Can't get assigned irq %d,result=%d\n",IRQ_EINT1,result);
 		return result;
 	}
 
@@ -315,8 +315,8 @@ int init_module(void)
 		1,S_IFCHR|S_IRUGO|S_IWUGO,&candev_fops,NULL);	
 
 	//result=register_chrdev(INT_DEV_MAJOR,INT_DEV_NAME,&candev_fops); 
-	//if(result<0)printk("insmod failed\n");
-	//else printk("insmod successfully %d\n",result);
+	//if(result<0)//printk("insmod failed\n");
+	//else //printk("insmod successfully %d\n",result);
 
 	/********************do address map from physical address to virtual address*********/
 	address_map();	
@@ -336,12 +336,12 @@ void cleanup_module(void)
 
 	if(int_timer!=NULL)
 	{		
-		if(del_timer(int_timer)==1)printk("---close timer-----\n");
+		if(del_timer(int_timer)==1)//printk("---close timer-----\n");
 		kfree(int_timer);
 	}
 
 	unregister_chrdev(INT_DEV_MAJOR,INT_DEV_NAME);
-	printk("rmmod successfully\n");
+	//printk("rmmod successfully\n");
 }
 
 

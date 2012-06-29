@@ -64,7 +64,7 @@ void can_interrupt(int irq,void *d,struct pt_regs *regs)
 	//Write_2510(CANINTE, 0x00); //close interrupt in mcp2510 //it is not true ,and 
 	//will induce message lost. luo 20110401
 
-	printk("<0>""in can interrupting---1--\n");
+	//printk("<0>""in can interrupting---1--\n");
 
 	buffer = Read_Instr_2510(CANINTF);
 	
@@ -81,72 +81,72 @@ void can_interrupt(int irq,void *d,struct pt_regs *regs)
 	*/
 	if((buffer&MERRF) >0)
 	{
-		printk("mcp2510 message error\n");
+		//printk("mcp2510 message error\n");
 		tmp=Read_Instr_2510(TXB0CTRL);
 		if((tmp&TXERR)>0)
-			printk("TX0 transmit error\n");
+			//printk("TX0 transmit error\n");
 		if((tmp&MLOA)>0)
-			printk("TX0 transmit lost arbitration\n");
+			//printk("TX0 transmit lost arbitration\n");
 		tmp=Read_Instr_2510(TXB1CTRL);
 		if((tmp&TXERR)>0)
-			printk("TX1 transmit error\n");
+			//printk("TX1 transmit error\n");
 		if((tmp&MLOA)>0)
-			printk("TX1 transmit lost arbitration\n");
+			//printk("TX1 transmit lost arbitration\n");
 		tmp=Read_Instr_2510(TXB2CTRL);
 		if((tmp&TXERR)>0)
-			printk("TX2 transmit error\n");
+			//printk("TX2 transmit error\n");
 		if((tmp&MLOA)>0)
-			printk("TX2 transmit lost arbitration\n");
+			//printk("TX2 transmit lost arbitration\n");
 		BitModify_Instr_2510(CANINTF, MERRF, 0);
 	}
 	if((buffer&WAKIF) >0)
 	{
-		printk("mcp2510 wake up\n");
+		//printk("mcp2510 wake up\n");
 		BitModify_Instr_2510(CANINTF, WAKIF, 0);
 	}
 	if((buffer&ERRIF) >0)
 	{
 		tmp=Read_Instr_2510(EFLG);
-		printk("mcp2510 ERROR and EFLG is %X\n",tmp);
-		if((tmp&RX1OVR)>0) printk("RX1 overflow\n");
-		if((tmp&RX0OVR)>0) printk("RX0 overflow\n");
-		if((tmp&TXBO)>0) printk("Transmit Error Count reach 255,Bus-off error \n");
-		if((tmp&TXEP)>0) printk("Transmit Error Count >=128\n");
-		if((tmp&RXEP)>0) printk("Receive Error Count >=128\n");
-		if((tmp&TXWAR)>0) printk("Transmit Error Count >=96\n");
-		if((tmp&RXWAR)>0) printk("Receive Error Count >=96\n");
-		if((tmp&EWARN)>0) printk("Receive Error Count >=96 or Transmit Error Count >=96\n");
+		//printk("mcp2510 ERROR and EFLG is %X\n",tmp);
+		if((tmp&RX1OVR)>0) //printk("RX1 overflow\n");
+		if((tmp&RX0OVR)>0) //printk("RX0 overflow\n");
+		if((tmp&TXBO)>0) //printk("Transmit Error Count reach 255,Bus-off error \n");
+		if((tmp&TXEP)>0) //printk("Transmit Error Count >=128\n");
+		if((tmp&RXEP)>0) //printk("Receive Error Count >=128\n");
+		if((tmp&TXWAR)>0) //printk("Transmit Error Count >=96\n");
+		if((tmp&RXWAR)>0) //printk("Receive Error Count >=96\n");
+		if((tmp&EWARN)>0) //printk("Receive Error Count >=96 or Transmit Error Count >=96\n");
 		BitModify_Instr_2510(CANINTF, ERRIF, 0);
 	}
 	if((buffer&TX2IF) >0)
 	{
-		printk("mcp2510 TX2 BUFFER BECOMING EMPTY\n");
+		//printk("mcp2510 TX2 BUFFER BECOMING EMPTY\n");
 		BitModify_Instr_2510(CANINTF, TX2IF, 0);
 	}
 	if((buffer&TX1IF) >0)
 	{
-		printk("mcp2510 TX1 BUFFER BECOMING EMPTY\n");
+		//printk("mcp2510 TX1 BUFFER BECOMING EMPTY\n");
 		BitModify_Instr_2510(CANINTF, TX1IF, 0);
 	}
 	if((buffer&TX0IF) >0)
 	{
-		printk("mcp2510 TX0 BUFFER BECOMING EMPTY\n");
+		//printk("mcp2510 TX0 BUFFER BECOMING EMPTY\n");
 		BitModify_Instr_2510(CANINTF, TX0IF, 0);
 	}
 	if((buffer&RX1IF)>0)
 	{
-		printk("mcp2510 RX1 BUFFER BECOMING FULL\n");
+		//printk("mcp2510 RX1 BUFFER BECOMING FULL\n");
 		can_data_receive(1);
 		BitModify_Instr_2510(CANINTF, RX1IF, 0);
 		kill_fasync(&can_async_queue,SIGIO,POLL_OUT);
 	}
 	if((buffer&RX0IF)>0)
 	{
-		printk("mcp2510 RX0 BUFFER BECOMING FULL\n");
+		//printk("mcp2510 RX0 BUFFER BECOMING FULL\n");
 		can_data_receive(0);
 		BitModify_Instr_2510(CANINTF, RX0IF, 0);
 
-		printk("PREPARING TO KILL SIGIO\n");
+		//printk("PREPARING TO KILL SIGIO\n");
 		kill_fasync(&can_async_queue,SIGIO,POLL_OUT);
 	}
 
@@ -160,11 +160,11 @@ void can_interrupt(int irq,void *d,struct pt_regs *regs)
 void inttimer_timeover(unsigned long arg)
 {
 	//unsigned char buffer;
-//	printk("\n===============In timer--ing==================\n");
+//	//printk("\n===============In timer--ing==================\n");
 
 	//	buffer = ReadStatus_Instr_2510();
 
-	//	printk("Now can state is %x\n",buffer);
+	//	//printk("Now can state is %x\n",buffer);
 
 	/*	if((buffer&RX0IF)>0)
 	{
@@ -241,27 +241,27 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 	{
 	case IOCTL_MOD_SET:
 		copy_from_user(&tmp,(unsigned char *)arg,1);
-		printk("============IOCTL MODE SET===============\n");
+		//printk("============IOCTL MODE SET===============\n");
 		switch(tmp){
 		case OP_NORMAL:
 			MCP2510_SetNormalMode();
-			printk("==set normal done==\n");
+			//printk("==set normal done==\n");
 			return 1;
 		case OP_LISTEN_ONLY:
 			MCP2510_SetListenOnlyMode();
-			printk("==set listen only done==\n");
+			//printk("==set listen only done==\n");
 			return 1;
 		case OP_LOOPBACK:
 			MCP2510_SetLoopbackMode();
-			printk("==set loopback done==\n");
+			//printk("==set loopback done==\n");
 			return 1;
 		case OP_SLEEP:
 			MCP2510_SetSleepMode();
-			printk("==set sleep done==\n");
+			//printk("==set sleep done==\n");
 			return 1;
 		case OP_CONFIG:
 			MCP2510_SetConfigMode();
-			printk("==set config done==\n");
+			//printk("==set config done==\n");
 			return 1;
 		default:
 			return -1;
@@ -271,7 +271,7 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 		if(!arg)
 			return -1;
 
-		printk("============IOCTL GET MODE===============\n");
+		//printk("============IOCTL GET MODE===============\n");
 		tmp= Read_Instr_2510(CANSTAT);
 		tmp=((tmp&0xe0)>>5);
 		copy_to_user((unsigned char *)arg,&tmp,1);
@@ -280,7 +280,7 @@ static int can_ioctl(struct inode *inode,struct file *filp,unsigned int cmd,unsi
 		if(!arg)
 			return -1;
 
-		printk("============IOCTL GET CANSTAT===============\n");
+		//printk("============IOCTL GET CANSTAT===============\n");
 		tmp= ReadStatus_Instr_2510();
 		copy_to_user((unsigned char*)arg,&tmp,1);
 		break;
@@ -299,7 +299,7 @@ static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 	//our OWN code, directly copied from can_sensor.c, by Andriy;
 	ssize_t ret = 0;
 	unsigned char buffer;
-	printk("prepare to can_data_receive()\n");
+	//printk("prepare to can_data_receive()\n");
 	down_interruptible(&rx_mutex);
 
 //	can_data_receive(0);
@@ -308,14 +308,14 @@ static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 	mdelay(100);
 	if((buffer & RX1IF)>0)
 	{
-		printk("mcp2510 RX1 BUFFER BECOMING FULL\n");
+		//printk("mcp2510 RX1 BUFFER BECOMING FULL\n");
 		can_data_receive(1);
 		BitModify_Instr_2510(CANINTF, RX1IF, 0);
 		kill_fasync(&can_async_queue,SIGIO,POLL_OUT);
 	}
 	if((buffer & RX0IF)>0)
 	{
-		printk("mcp2510 RX0 BUFFER BECOMING FULL\n");
+		//printk("mcp2510 RX0 BUFFER BECOMING FULL\n");
 		can_data_receive(0);
 		BitModify_Instr_2510(CANINTF, RX0IF, 0);
 		kill_fasync(&can_async_queue,SIGIO,POLL_OUT);
@@ -333,11 +333,11 @@ static ssize_t can_read(struct file *filp,char *buf,size_t count,loff_t *f_pos)
 		RXbuffer.head = (RXbuffer.head + 1) % RXBUFLEN;
 		RXbuffer.count--;
 
-		printk("==count is %d, copied by Andriy==\n", ret);
+		//printk("==count is %d, copied by Andriy==\n", ret);
 	}
 	else
 	{
-		printk("==count is 0, no msgs in RXbuffer==\n");
+		//printk("==count is 0, no msgs in RXbuffer==\n");
 		ret = -1;
 	}
 
@@ -358,7 +358,7 @@ static ssize_t can_write(struct file *filp,const char *buf,size_t count,loff_t *
 
 	copy_from_user(TXbuffer.TXdata+(TXbuffer.head+TXbuffer.count-1)%TXBUFLEN,(PCanData *)buf,16);
 
-	printk("In can_write:TXdata tail is %d\n",TXbuffer.TXdata[(TXbuffer.head+TXbuffer.count-1)%TXBUFLEN].dlc);
+	//printk("In can_write:TXdata tail is %d\n",TXbuffer.TXdata[(TXbuffer.head+TXbuffer.count-1)%TXBUFLEN].dlc);
 
 	//TXdata[0].dlc=count;
 
@@ -404,10 +404,10 @@ void test(void)
 	unsigned char buffer;
 	spi_tx_data(0xff);
 	buffer= rSPRDAT0;
-	printk("\n====buffer %x======\n",buffer);
+	//printk("\n====buffer %x======\n",buffer);
 	spi_tx_data(0x34);
 	buffer= rSPRDAT0;
-	printk("\n====buffer %x======\n",buffer);
+	//printk("\n====buffer %x======\n",buffer);
 }
 
 
@@ -428,7 +428,7 @@ int init_module(void)
 	unsigned int result; 
 	int flags;
 
-	printk("in init_module()\n");
+	//printk("in init_module()\n");
 
 	/********************set timer******************************************************/
 	/*	int_timer=kmalloc(sizeof(struct timer_list),GFP_KERNEL);
@@ -446,15 +446,15 @@ int init_module(void)
 	result = request_irq(IRQ_EINT1,&can_interrupt,SA_INTERRUPT,"can",NULL);
 	if (result)
 	{
-		printk("Can't get assigned irq %d,result=%d\n",IRQ_EINT1,result);
+		//printk("Can't get assigned irq %d,result=%d\n",IRQ_EINT1,result);
 		return result;
 	}
 
 	iic_major = devfs_register_chrdev(0, CANDEV_CLASS, &candev_fops);
-	printk("传说中的iic_major: %d\n", iic_major);
+	//printk("传说中的iic_major: %d\n", iic_major);
 	if (iic_major < 0)
 	{
-		printk("iic_major cannot register.\n");
+		//printk("iic_major cannot register.\n");
 		return result;
 	}
 
@@ -462,8 +462,8 @@ int init_module(void)
 		1,S_IFCHR|S_IRUGO|S_IWUGO,&candev_fops,NULL);
 
 	//result=register_chrdev(INT_DEV_MAJOR,INT_DEV_NAME,&candev_fops); 
-	//if(result<0)printk("insmod failed\n");
-	//else printk("insmod successfully %d\n",result);
+	//if(result<0)//printk("insmod failed\n");
+	//else //printk("insmod successfully %d\n",result);
 
 	/********************do address map from physical address to virtual address*********/
 	address_map();
@@ -483,14 +483,14 @@ void cleanup_module(void)
 
 	if(int_timer!=NULL)
 	{
-		if(del_timer(int_timer)==1)printk("---close timer-----\n");
+		if(del_timer(int_timer)==1)//printk("---close timer-----\n");
 		kfree(int_timer);
 	}
 
 	unregister_chrdev(iic_major, INT_DEV_NAME);
 	//unregister_chrdev(INT_DEV_MAJOR,INT_DEV_NAME);
 	devfs_unregister(dev_handler);
-	printk("rmmod successfully\n");
+	//printk("rmmod successfully\n");
 }
 
 
