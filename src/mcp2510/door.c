@@ -18,6 +18,17 @@ char buf[111];
 int dev;
 
 
+void show_help()
+{
+	printf("Enter a to open main door.\n");
+	printf("Enter s to close main door.\n");
+	printf("Enter d to lock main door.\n");
+	printf("Enter z to open sub door.\n");
+	printf("Enter x to close sub door.\n");
+	printf("Enter c to lock sub door.\n");
+}
+
+
 void show_main_door(char status)
 {
 	printf("in show_main_door()\n");
@@ -124,6 +135,7 @@ int main()
 			}
 		}
 
+		show_help();
 		while((char_exit = getchar()) != 'q')
 		{
 			if (char_exit == '\n' || char_exit == '\r')
@@ -181,6 +193,8 @@ int main()
 					break;
 				}
 			}
+
+			show_help();
 		}
 	}
 	else

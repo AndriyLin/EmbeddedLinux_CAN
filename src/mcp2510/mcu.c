@@ -29,6 +29,14 @@ int sub_door_status = EL_DOOR_CLOSE;
 int car_status = EL_CAR_STOP;
 
 
+void show_help()
+{
+	printf("Enter z to make car stop.\n");
+	printf("Enter x to make car start.\n");
+	printf("Enter c to make car run.\n");
+	printf("Enter p to print all information.\n");
+}
+
 void print_all()
 {
 	char *car_status_map[] = 
@@ -307,6 +315,7 @@ int main()
 			}
 		}
 
+		show_help();
 		while((char_exit = getchar()) != 'q')
 		{
 			if (char_exit == '\n' || char_exit == '\r')
@@ -337,6 +346,8 @@ int main()
 						break;
 				}
 			}
+
+			show_help();
 		}
 	}
 	else
