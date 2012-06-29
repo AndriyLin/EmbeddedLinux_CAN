@@ -31,10 +31,16 @@ int car_status = EL_CAR_STOP;
 
 void show_help()
 {
+	printf("\n");
+	printf("======================================\n");
+	printf("\n");
 	printf("Enter z to make car stop.\n");
 	printf("Enter x to make car start.\n");
 	printf("Enter c to make car run.\n");
-	printf("Enter p to print all information.\n");
+//	printf("Enter p to print all information.\n");
+	printf("\n");
+	printf("======================================\n");
+	printf("\n");
 }
 
 void print_all()
@@ -54,10 +60,17 @@ void print_all()
 		"OPEN", "CLOSED", "LOCKED"
 	};
 
-	printf("Car Status      = %s\n", car_status_map[car_status]);
-	printf("Light Status    = %s\n", light_status_map[light_display_status]);
-	printf("MainDoor Status = %s\n", door_status_map[main_door_status]);
-	printf("SubDoor Status  = %s\n", door_status_map[sub_door_status]);
+	printf("Car Status      = \033[33m%s\033[0m\n", car_status_map[car_status]);
+	if (light_display_status == 1)
+	{
+		printf("Light Status    = \033[47;30m%s\033[0m\n", light_status_map[light_display_status]);
+	}
+	else
+	{
+		printf("Light Status    = %s\n", light_status_map[light_display_status]);
+	}
+	printf("MainDoor Status = \033[35m%s\033[0m\n", door_status_map[main_door_status]);
+	printf("SubDoor Status  = \033[36m%s\033[0m\n", door_status_map[sub_door_status]);
 }
 
 
@@ -160,7 +173,7 @@ void onMainDoor(char op, char param)
 				onSubDoor(EL_OP_SUB_DOOR_SET, EL_DOOR_CLOSE);
 			}
 		}
-		
+
 		if (main_door_status == EL_DOOR_LOCKED)
 		{
 			// 主门从close变成了locked, 直接调用副门的onXX，毕竟若是副门不是在closed的状态，它也变不了locked。
@@ -177,7 +190,7 @@ void onMainDoor(char op, char param)
 	//两个门的状态更新完看下灯的状态有没有改变
 	// closed -> open -> closed
 	if (main_door_status == EL_DOOR_OPEN ||
-		old_main_door_state == EL_DOOR_OPEN)
+			old_main_door_state == EL_DOOR_OPEN)
 	{
 		modify_light_semaphore(main_door_status - old_main_door_state);
 	}
@@ -241,7 +254,7 @@ void onSubDoor(char op, char param)
 	//两个门的状态更新完看下灯的状态有没有改变
 	// closed -> open -> closed
 	if (sub_door_status == EL_DOOR_OPEN ||
-		old_sub_door_state == EL_DOOR_OPEN)
+			old_sub_door_state == EL_DOOR_OPEN)
 	{
 		modify_light_semaphore(sub_door_status - old_sub_door_state);
 	}
@@ -252,32 +265,39 @@ void sig_usr()//接收到信号后执行的函数
 	int count = 0;
 	char* data = buf;
 
+	printf("IN SIG_USR()\n");
+
 	signal(SIGIO,sig_usr);	//继续接收信号
 	printf("----receive signal, in sig_usr()------\n");
 	count = read(dev, buf, 8);
-	printf("read count = %d \n", count);
-
-	if (data[EL_BIT_TO] != EL_MCU)
+	if (count != 8)
 	{
-		//not sent to MCU, discard it
+		printf("read count = %d, not 8, discarded!\n", count);
 		return;
 	}
 
-	switch (data[EL_BIT_FROM])
+	printf("before if\n");
+	if (data[EL_BIT_TO] == EL_MCU)
 	{
-	case EL_LIGHT:
-		onLight(data[EL_BIT_OP], data[EL_BIT_PARAM]);
-		break;
-	case EL_MAIN_DOOR:
-		onMainDoor(data[EL_BIT_OP], data[EL_BIT_PARAM]);
-		break;
-	case EL_SUB_DOOR:
-		onSubDoor(data[EL_BIT_OP], data[EL_BIT_PARAM]);
-		break;
+		printf("in if\n");
+		switch (data[EL_BIT_FROM])
+		{
+			case EL_LIGHT:
+				onLight(data[EL_BIT_OP], data[EL_BIT_PARAM]);
+				break;
+			case EL_MAIN_DOOR:
+				onMainDoor(data[EL_BIT_OP], data[EL_BIT_PARAM]);
+				break;
+			case EL_SUB_DOOR:
+				onSubDoor(data[EL_BIT_OP], data[EL_BIT_PARAM]);
+				break;
 
-	default:
-		break;
-
+			default:
+				break;
+		}
+		system("clear");
+		show_help();
+		print_all();
 	}
 }
 
@@ -291,7 +311,7 @@ int main()
 	}
 	else
 	{
-		printf("signal success\n");
+//		printf("signal success\n");
 	}
 
 	dev = open(DEVICE_NAME, O_RDWR);
@@ -300,30 +320,38 @@ int main()
 		int char_exit = '\0';
 		unsigned char to_mode = OP_NORMAL;
 		unsigned char mode = -1;
-		
+		int oflag = -1;
+
 		ioctl(dev, IOCTL_GET_MODE, &mode);
 		if (mode != to_mode)
 		{
 			//设置为to_mode模式
 			if (ioctl(dev, IOCTL_MOD_SET, &to_mode) == 1)
 			{
-				printf("set mode %d, ioctl success\n", to_mode);
+				//printf("set mode %d, ioctl success\n", to_mode);
 			}
 			else
 			{
 				printf("set mode %d, ioctl returns not 1, so failed\n", to_mode);
 			}
 		}
+		fcntl(dev, F_SETOWN, getpid());//将用户进程号写到设备文件中，让驱动发送信号到用户进程
+		oflag = fcntl(dev, F_GETFL);
+		fcntl(dev, F_SETFL, oflag|FASYNC);
 
 		show_help();
+		print_all();
 		while((char_exit = getchar()) != 'q')
 		{
-			if (char_exit == '\n' || char_exit == '\r')
+			if (/*char_exit == '\n' || */char_exit == '\r')
 			{
 				continue;
 			}
 			else
 			{
+				system("clear");
+				show_help();
+
 				switch (char_exit)
 				{
 					case EL_CHAR_CAR_STOP:
@@ -339,15 +367,14 @@ int main()
 						break;
 
 					case EL_CHAR_PRINT:
-						print_all();
+		//				print_all();
 						break;
 
 					default:
 						break;
 				}
+				print_all();
 			}
-
-			show_help();
 		}
 	}
 	else

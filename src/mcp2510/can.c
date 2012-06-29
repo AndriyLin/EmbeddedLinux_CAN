@@ -145,6 +145,8 @@ void can_interrupt(int irq,void *d,struct pt_regs *regs)
 		printk("mcp2510 RX0 BUFFER BECOMING FULL\n");
 		can_data_receive(0);
 		BitModify_Instr_2510(CANINTF, RX0IF, 0);
+
+		printk("PREPARING TO KILL SIGIO\n");
 		kill_fasync(&can_async_queue,SIGIO,POLL_OUT);
 	}
 

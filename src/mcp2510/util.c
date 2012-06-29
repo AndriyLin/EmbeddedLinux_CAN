@@ -20,7 +20,7 @@ void send(int dev, char* data)
 	}
 
 	//dlc
-	TXdata[12]=  0x06;
+	TXdata[12]=  0x08;
 	//isExt
 	TXdata[13]=  0x00;
 	//rxRTR
@@ -28,7 +28,8 @@ void send(int dev, char* data)
 	//padbyte
 	TXdata[15]=  0x00;
 
-	write(dev, TXdata, 16);	//发送数据
+	index = write(dev, TXdata, 16);	//发送数据
+	printf("write result is %d\n", index);
 }
 
 

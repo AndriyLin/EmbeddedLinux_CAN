@@ -36,35 +36,38 @@ void sig_usr()//接收到信号后执行的函数
 	signal(SIGIO,sig_usr);	//继续接收信号
 	printf("----receive signal, in sig_usr()------\n");
 	count = read(dev, buf, 8);
-	printf("read count = %d \n", count);
-
-	if (data[EL_BIT_TO] != EL_LIGHT)
+	if (count != 8)
 	{
-		//not sent to LIGHT
+		printf("read count = %d, not 8, discarded!\n", count);
 		return;
 	}
 
-	if (data[EL_BIT_FROM] == EL_MCU && data[EL_BIT_OP] == EL_OP_MCU_SET_LIGHT)
+	if (data[EL_BIT_TO] == EL_LIGHT)
 	{
-		switch (data[EL_BIT_PARAM])
+		if (data[EL_BIT_FROM] == EL_MCU && data[EL_BIT_OP] == EL_OP_MCU_SET_LIGHT)
 		{
-		case EL_LIGHT_ON:
-			show_light_on();
-			break;
-			
-		case EL_LIGHT_OFF:
-			show_light_off();
-			break;
+			switch (data[EL_BIT_PARAM])
+			{
+				case EL_LIGHT_ON:
+					show_light_on();
+					break;
 
-		default:
-			break;
-		}
-	}
+				case EL_LIGHT_OFF:
+					show_light_off();
+					break;
+
+				default:
+					break;
+			}
+		} //end of EL_BIT_FROM && EL_BIT_OP
+	} //end of EL_BIT_TO
 }
 
 void show_help()
 {
+	printf("\n");
 	printf("to make light always on or not, enter o\n");
+	printf("\n");
 }
 
 int main()
@@ -77,7 +80,7 @@ int main()
 	}
 	else
 	{
-		printf("signal success\n");
+//		printf("signal success\n");
 	}
 
 	dev = open(DEVICE_NAME, O_RDWR);
@@ -87,6 +90,7 @@ int main()
 		unsigned char to_mode = OP_NORMAL;
 		unsigned char mode = -1;
 		char data[8];
+		int oflag = -1;
 
 		ioctl(dev, IOCTL_GET_MODE, &mode);
 		if (mode != to_mode)
@@ -94,13 +98,16 @@ int main()
 			//设置为to_mode模式
 			if (ioctl(dev, IOCTL_MOD_SET, &to_mode) == 1)
 			{
-				printf("set mode %d, ioctl success\n", to_mode);
+//				printf("set mode %d, ioctl success\n", to_mode);
 			}
 			else
 			{
 				printf("set mode %d, ioctl returns not 1, so failed\n", to_mode);
 			}
 		}
+		fcntl(dev, F_SETOWN, getpid());//将用户进程号写到设备文件中，让驱动发送信号到用户进程
+		oflag = fcntl(dev, F_GETFL);
+		fcntl(dev, F_SETFL, oflag|FASYNC);
 
 		show_help();
 		while((char_exit = getchar()) != 'q')
@@ -110,25 +117,24 @@ int main()
 				continue;
 			}
 
+//			system("clear");
+			show_help();
+
 			switch(char_exit)
 			{
-			{
-			case EL_CHAR_LIGHT_ALWAYS_ON:
-				//Set always on or set not always on
-				data[EL_BIT_TO] = EL_MCU;
-				data[EL_BIT_FROM] = EL_LIGHT;
-				data[EL_BIT_OP] = EL_OP_LIGHT_SET_ALWAYS_ON;
-				data[EL_BIT_PARAM] = 0;	//useless
+				case EL_CHAR_LIGHT_ALWAYS_ON:
+					//Set always on or set not always on
+					data[EL_BIT_TO] = EL_MCU;
+					data[EL_BIT_FROM] = EL_LIGHT;
+					data[EL_BIT_OP] = EL_OP_LIGHT_SET_ALWAYS_ON;
+					data[EL_BIT_PARAM] = 0;	//useless
 
-				send(dev, data); 
-				break;
+					send(dev, data); 
+					break;
+
+				default:
+					break;
 			}
-
-			default:
-				break;
-			}
-
-			show_help();
 		}
 	}
 	else

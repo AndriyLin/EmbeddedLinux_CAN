@@ -21,13 +21,13 @@ receive:
 final: mcu door light
 
 mcu:
-	$(CC) -o mcu.o mcu.c
+	$(CC) -o mcu.o mcu.c util.c
 
 door:
-	$(CC) -o door.o door.c
+	$(CC) -o door.o door.c util.c
 
 light:
-	$(CC) -o light.o light.c
+	$(CC) -o light.o light.c util.c
 
 
 clean:
