@@ -20,14 +20,12 @@ int dev;
 
 void show_light_on()
 {
-	//TODO
-	printf("in show_light_on()\n");
+	printf("Light is ON\n");
 }
 
 void show_light_off()
 {
-	//TODO
-	printf("in show_light_off()\n");
+	printf("Light is OFF\n");
 }
 
 void sig_usr()//接收到信号后执行的函数
@@ -46,7 +44,7 @@ void sig_usr()//接收到信号后执行的函数
 		return;
 	}
 
-	if (data[EL_BIT_FROM] == EL_MCU && data[EL_BIT_OP] == EL_OP_MCU_SET_LIGHT_ONOFF)
+	if (data[EL_BIT_FROM] == EL_MCU && data[EL_BIT_OP] == EL_OP_MCU_SET_LIGHT)
 	{
 		switch (data[EL_BIT_PARAM])
 		{
@@ -66,7 +64,7 @@ void sig_usr()//接收到信号后执行的函数
 
 void show_help()
 {
-	printf("to make light always on or not, enter \'o\'\n");
+	printf("to make light always on or not, enter o\n");
 }
 
 int main()
@@ -115,7 +113,7 @@ int main()
 			switch(char_exit)
 			{
 			{
-			case 'o':
+			case EL_CHAR_LIGHT_ALWAYS_ON:
 				//Set always on or set not always on
 				data[EL_BIT_TO] = EL_MCU;
 				data[EL_BIT_FROM] = EL_LIGHT;

@@ -10,14 +10,14 @@
 #define EL_CAR_RUNNING (2)
 
 //Inner light status
-#define EL_LIGHT_ON (3)
-#define EL_LIGHT_OFF (4)
-#define EL_LIGHT_ALWAYS_ON (5)
+#define EL_LIGHT_ON (0)
+#define EL_LIGHT_OFF (1)
+#define EL_LIGHT_ALWAYS_ON (2)
 
 //Door status
-#define EL_DOOR_OPEN (6)
-#define EL_DOOR_CLOSE (7)
-#define EL_DOOR_LOCKED (8)
+#define EL_DOOR_OPEN (0)
+#define EL_DOOR_CLOSE (1)
+#define EL_DOOR_LOCKED (2)
 
 
 //地址表示
@@ -54,7 +54,32 @@
 #define EL_OP_LIGHT_SET_ALWAYS_ON (0)
 
 //from MCU
-#define EL_OP_MCU_SET_LIGHT_ONOFF (0)
+#define EL_OP_MCU_SET_LIGHT (0)
+#define EL_OP_MCU_SET_MAIN_DOOR (1)
+#define EL_OP_MCU_SET_SUB_DOOR (2)
+
+//from Door
+#define EL_OP_MAIN_DOOR_SET (0)
+#define EL_OP_SUB_DOOR_SET (1)
+
+
+
+//INPUT
+#define EL_CHAR_LIGHT_ALWAYS_ON ('o')
+
+#define EL_CHAR_MAIN_DOOR_OPEN ('a')
+#define EL_CHAR_MAIN_DOOR_CLOSE ('s')
+#define EL_CHAR_MAIN_DOOR_LOCK ('d')
+
+#define EL_CHAR_SUB_DOOR_OPEN ('z')
+#define EL_CHAR_SUB_DOOR_CLOSE ('x')
+#define EL_CHAR_SUB_DOOR_LOCK ('c')
+
+#define EL_CHAR_CAR_STOP ('z')
+#define EL_CHAR_CAR_START ('x')
+#define EL_CHAR_CAR_RUN ('c')
+
+#define EL_CHAR_PRINT ('p')
 
 
 //data数组的长度为8！

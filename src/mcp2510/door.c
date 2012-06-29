@@ -18,16 +18,75 @@ char buf[111];
 int dev;
 
 
+void show_main_door(char status)
+{
+	printf("in show_main_door()\n");
+
+	printf("MainDoor State = ");
+
+	switch (status)
+	{
+	case EL_DOOR_OPEN:
+		printf("OPEN");
+		break;
+	case EL_DOOR_CLOSE:
+		printf("CLOSED");
+		break;
+	case EL_DOOR_LOCKED:
+		printf("LOCKED");
+		break;
+	}
+
+	printf("\n");
+}
+
+void show_sub_door(char status)
+{
+	printf("in show_sub_door()\n");
+
+	printf("SubDoor State  = ");
+
+	switch (status)
+	{
+	case EL_DOOR_OPEN:
+		printf("OPEN");
+		break;
+	case EL_DOOR_CLOSE:
+		printf("CLOSED");
+		break;
+	case EL_DOOR_LOCKED:
+		printf("LOCKED");
+		break;
+	}
+
+	printf("\n");
+}
+
 void sig_usr()//接收到信号后执行的函数
 {	
 	int count = 0;
+	char* data = buf;
 
 	signal(SIGIO,sig_usr);	//继续接收信号
 	printf("----receive signal, in sig_usr()------\n");
 	count = read(dev, buf, 8);
 	printf("read count = %d \n", count);
 
-	//TODO
+	if (data[EL_BIT_TO] == EL_MAIN_DOOR)
+	{
+		if (data[EL_BIT_FROM] == EL_MCU && data[EL_BIT_OP] == EL_OP_MCU_SET_MAIN_DOOR)
+		{
+			show_main_door(data[EL_BIT_PARAM]);
+		}
+	}
+
+	if (data[EL_BIT_TO] == EL_SUB_DOOR)
+	{
+		if (data[EL_BIT_FROM] == EL_MCU && data[EL_BIT_OP] == EL_OP_MCU_SET_SUB_DOOR)
+		{
+			show_sub_door(data[EL_BIT_PARAM]);
+		}
+	}
 }
 
 int main()
@@ -49,6 +108,7 @@ int main()
 		int char_exit = '\0';
 		unsigned char to_mode = OP_NORMAL;
 		unsigned char mode = -1;
+		char data[8];
 		
 		ioctl(dev, IOCTL_GET_MODE, &mode);
 		if (mode != to_mode)
@@ -68,10 +128,58 @@ int main()
 		{
 			if (char_exit == '\n' || char_exit == '\r')
 			{
-				//TODO
+				continue;
 			}
 			else
 			{
+				data[EL_BIT_TO] = EL_MCU;
+				switch (char_exit)
+				{
+				case EL_CHAR_MAIN_DOOR_OPEN:
+					data[EL_BIT_FROM] = EL_MAIN_DOOR;
+					data[EL_BIT_OP] = EL_OP_MAIN_DOOR_SET;
+					data[EL_BIT_PARAM] = EL_DOOR_OPEN;
+					send(dev, data);
+					break;
+
+				case EL_CHAR_MAIN_DOOR_CLOSE:
+					data[EL_BIT_FROM] = EL_MAIN_DOOR;
+					data[EL_BIT_OP] = EL_OP_MAIN_DOOR_SET;
+					data[EL_BIT_PARAM] = EL_DOOR_CLOSE;
+					send(dev, data);
+					break;
+				
+				case EL_CHAR_MAIN_DOOR_LOCK:
+					data[EL_BIT_FROM] = EL_MAIN_DOOR;
+					data[EL_BIT_OP] = EL_OP_MAIN_DOOR_SET;
+					data[EL_BIT_PARAM] = EL_DOOR_LOCKED;
+					send(dev, data);
+					break;
+
+				case EL_CHAR_SUB_DOOR_OPEN:
+					data[EL_BIT_FROM] = EL_SUB_DOOR;
+					data[EL_BIT_OP] = EL_OP_SUB_DOOR_SET;
+					data[EL_BIT_PARAM] = EL_DOOR_OPEN;
+					send(dev, data);
+					break;
+
+				case EL_CHAR_SUB_DOOR_CLOSE:
+					data[EL_BIT_FROM] = EL_SUB_DOOR;
+					data[EL_BIT_OP] = EL_OP_SUB_DOOR_SET;
+					data[EL_BIT_PARAM] = EL_DOOR_CLOSE;
+					send(dev, data);
+					break;
+
+				case EL_CHAR_SUB_DOOR_LOCK:
+					data[EL_BIT_FROM] = EL_SUB_DOOR;
+					data[EL_BIT_OP] = EL_OP_SUB_DOOR_SET;
+					data[EL_BIT_PARAM] = EL_DOOR_LOCKED;
+					send(dev, data);
+					break;
+
+				default:
+					break;
+				}
 			}
 		}
 	}

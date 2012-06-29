@@ -14,35 +14,56 @@
 #define DEVICE_NAME "/dev/tmpdev"
 
 
+
+
 char buf[111];
 int dev;
 
 int light_always_on = FALSE;
 int light_status = EL_LIGHT_OFF;
+int light_display_status;
 
 int main_door_status = EL_DOOR_CLOSE;
 int sub_door_status = EL_DOOR_CLOSE;
 
+int car_status = EL_CAR_STOP;
 
-//to send message to LIGHT MODULE to set light on/off
-void to_set_light()
+
+void print_all()
+{
+	char *car_status_map[] = 
+	{
+		"STOP",
+		"STARTING",
+		"RUNNING"
+	};
+	char *light_status_map[] =
+	{
+		"OFF", "ON"
+	};
+	char *door_status_map[] =
+	{
+		"OPEN", "CLOSED", "LOCKED"
+	};
+
+	printf("Car Status      = %s\n", car_status_map[car_status]);
+	printf("Light Status    = %s\n", light_status_map[light_display_status]);
+	printf("MainDoor Status = %s\n", door_status_map[main_door_status]);
+	printf("SubDoor Status  = %s\n", door_status_map[sub_door_status]);
+}
+
+
+//根据当前状态告诉LIGHT模块状态
+void tell_light()
 {
 	char data[8];
 	data[EL_BIT_TO] = EL_LIGHT;
 	data[EL_BIT_FROM] = EL_MCU;
-	data[EL_BIT_OP] = EL_OP_MCU_SET_LIGHT_ONOFF;
-	if (light_always_on)
-	{
-		data[EL_BIT_PARAM] = EL_LIGHT_ON;
-	}
-	else
-	{
-		data[EL_BIT_PARAM] = light_status;
-	}
+	data[EL_BIT_OP] = EL_OP_MCU_SET_LIGHT;
+	data[EL_BIT_PARAM] = light_display_status;
 
 	send(dev, data); 
 }
-
 
 //处理从Light来的信息
 void onLight(char op, char param)
@@ -53,18 +74,169 @@ void onLight(char op, char param)
 		light_always_on = light_always_on ? FALSE : TRUE;
 		printf("LIGHT MODULE change LIGHT_ALWAYS_ON to %d\n", light_always_on);
 
-		to_set_light();
+		light_display_status = light_always_on;
+
+		tell_light();
 	}
 }
 
+void modify_light_semaphore(int value)
+{
+	light_status -= value;
+	light_display_status = (light_always_on > 0) || (light_status > 0);
+
+	tell_light();
+}
+
+//根据当前状态告诉MAIN_DOOR其状态
+void tell_main_door()
+{
+	char data[8];
+	data[EL_BIT_TO] = EL_MAIN_DOOR;
+	data[EL_BIT_FROM] = EL_MCU;
+	data[EL_BIT_OP] = EL_OP_MCU_SET_MAIN_DOOR;
+	data[EL_BIT_PARAM] = main_door_status;
+
+	send(dev, data); 
+}
+
+
+
+void onSubDoor(char op, char param);
+
+
+
 void onMainDoor(char op, char param)
 {
-	//TODO
+	int change_table[3][3][3] = 
+	{
+		// EL_CAR_STOP
+		{
+			// EL_DOOR_OPEN
+			{ 0, 1, 0 },
+			// EL_DOOR_CLOSE
+			{ 1, 0, 1 }, 
+			// EL_DOOR_LOCKED
+			{ 0, 1, 0 }
+		},
+		// EL_CAR_STARTING
+		{
+			// EL_DOOR_OPEN
+			{ 0, 1, 0 },
+			// EL_DOOR_CLOSE
+			{ 0, 0, 1 }, 
+			// EL_DOOR_LOCKED
+			{ 0, 1, 0 }
+		},
+		// EL_CAR_RUNNING
+		{
+			// EL_DOOR_OPEN
+			{ 0, 1, 0 },
+			// EL_DOOR_CLOSE
+			{ 0, 0, 1 }, 
+			// EL_DOOR_LOCKED
+			{ 0, 1, 0 }
+		}
+	};
+
+	int old_main_door_state = main_door_status;
+	if (change_table[car_status][main_door_status][param])
+	{
+		main_door_status = param;
+
+		if (old_main_door_state == EL_DOOR_LOCKED)
+		{
+			// 从lock变成close
+			if (sub_door_status == EL_DOOR_LOCKED)
+			{
+				onSubDoor(EL_OP_SUB_DOOR_SET, EL_DOOR_CLOSE);
+			}
+		}
+		
+		if (main_door_status == EL_DOOR_LOCKED)
+		{
+			// 主门从close变成了locked, 直接调用副门的onXX，毕竟若是副门不是在closed的状态，它也变不了locked。
+			// 从lssssssss 来看，状态的转换会被直接过滤而不会有误解
+			onSubDoor(EL_OP_SUB_DOOR_SET, EL_DOOR_LOCKED);
+		}
+	}
+	else
+	{
+		printf("unable to change status\n");
+		return ;
+	}
+
+	//两个门的状态更新完看下灯的状态有没有改变
+	// closed -> open -> closed
+	if (main_door_status == EL_DOOR_OPEN ||
+		old_main_door_state == EL_DOOR_OPEN)
+	{
+		modify_light_semaphore(main_door_status - old_main_door_state);
+	}
+}
+
+//根据当前状态告诉SUB_DOOR其状态
+void tell_sub_door()
+{
+	char data[8];
+	data[EL_BIT_TO] = EL_SUB_DOOR;
+	data[EL_BIT_FROM] = EL_MCU;
+	data[EL_BIT_OP] = EL_OP_MCU_SET_SUB_DOOR;
+	data[EL_BIT_PARAM] = sub_door_status;
+
+	send(dev, data); 
 }
 
 void onSubDoor(char op, char param)
 {
-	//TODO
+	int change_table[3][3][3] = 
+	{
+		// EL_CAR_STOP
+		{
+			// EL_DOOR_OPEN
+			{ 0, 1, 0 },
+			// EL_DOOR_CLOSE
+			{ 1, 0, 1 }, 
+			// EL_DOOR_LOCKED
+			{ 0, 1, 0 }
+		},
+		// EL_CAR_STARTING
+		{
+			// EL_DOOR_OPEN
+			{ 0, 1, 0 },
+			// EL_DOOR_CLOSE
+			{ 0, 0, 1 }, 
+			// EL_DOOR_LOCKED
+			{ 0, 1, 0 }
+		},
+		// EL_CAR_RUNNING
+		{
+			// EL_DOOR_OPEN
+			{ 0, 1, 0 },
+			// EL_DOOR_CLOSE
+			{ 0, 0, 1 }, 
+			// EL_DOOR_LOCKED
+			{ 0, 1, 0 }
+		}
+	};
+
+	int old_sub_door_state = sub_door_status;
+	if (change_table[car_status][sub_door_status][param])
+	{
+		sub_door_status = param;
+	}
+	else
+	{
+		printf("unable to change status\n");
+	}
+
+	//两个门的状态更新完看下灯的状态有没有改变
+	// closed -> open -> closed
+	if (sub_door_status == EL_DOOR_OPEN ||
+		old_sub_door_state == EL_DOOR_OPEN)
+	{
+		modify_light_semaphore(sub_door_status - old_sub_door_state);
+	}
 }
 
 void sig_usr()//接收到信号后执行的函数
@@ -83,17 +255,21 @@ void sig_usr()//接收到信号后执行的函数
 		return;
 	}
 
-	if (data[EL_BIT_FROM] == EL_LIGHT)
+	switch (data[EL_BIT_FROM])
 	{
+	case EL_LIGHT:
 		onLight(data[EL_BIT_OP], data[EL_BIT_PARAM]);
-	}
-	else if (data[EL_BIT_FROM] == EL_MAIN_DOOR)
-	{
+		break;
+	case EL_MAIN_DOOR:
 		onMainDoor(data[EL_BIT_OP], data[EL_BIT_PARAM]);
-	}
-	else if (data[EL_BIT_FROM]== EL_SUB_DOOR)
-	{
+		break;
+	case EL_SUB_DOOR:
 		onSubDoor(data[EL_BIT_OP], data[EL_BIT_PARAM]);
+		break;
+
+	default:
+		break;
+
 	}
 }
 
@@ -135,10 +311,31 @@ int main()
 		{
 			if (char_exit == '\n' || char_exit == '\r')
 			{
-				//TODO
+				continue;
 			}
 			else
 			{
+				switch (char_exit)
+				{
+					case EL_CHAR_CAR_STOP:
+						car_status = EL_CAR_STOP;
+						break;
+
+					case EL_CHAR_CAR_START:
+						car_status = EL_CAR_STARTING;
+						break;
+
+					case EL_CHAR_CAR_RUN:
+						car_status = EL_CAR_RUNNING;
+						break;
+
+					case EL_CHAR_PRINT:
+						print_all();
+						break;
+
+					default:
+						break;
+				}
 			}
 		}
 	}
