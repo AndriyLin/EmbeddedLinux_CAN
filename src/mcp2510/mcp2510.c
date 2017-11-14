@@ -267,10 +267,10 @@ void Init_MCP2510(void)
 	while(1)
 	{
 		buffer = Read_Instr_2510(CANSTAT);
-		printk("Init_MCP2510 CANSTAT register is %x\n",buffer);
+		//printk("Init_MCP2510 CANSTAT register is %x\n",buffer);
 		if((buffer&OP_MSK) == (OP_CONFIG<<5))
 		{
-			printk("In the Configure Mode\n");
+			//printk("In the Configure Mode\n");
 			break;
 		}
 		//Set to Configure Mode
@@ -398,18 +398,18 @@ void Init_MCP2510(void)
 	while(1)
 	{
 		buffer = Read_Instr_2510(CANSTAT);
-//		printk("Into Loopback ,CANSTAT register is %x\n",buffer);
+//		//printk("Into Loopback ,CANSTAT register is %x\n",buffer);
 
 		//     if((buffer&OP_MSK) == (OP_LOOPBACK<<5))
 		if((buffer&OP_MSK) == (OP_NORMAL<<5))
 		{
-			printk("In the NORMAL Mode\n");
-			//    printk("In the Loopback Mode\n");
+			//printk("In the NORMAL Mode\n");
+			//    //printk("In the Loopback Mode\n");
 			break;
 		}
 	}
 
-	printk("Init MCP2510 OK!\n");
+	//printk("Init MCP2510 OK!\n");
 }
 
 
@@ -428,7 +428,7 @@ int can_data_send(int j,int k)
 	length = p->dlc;
 	//length=5;//for testing
 
-	printk("in can_data_send:length=%d, in can_data_send()\n",length);
+	//printk("in can_data_send:length=%d, in can_data_send()\n",length);
 	if(length>8) length=8;
 
 //	Write_Instr_2510(TXB0SIDH+k*0x10,((p->id)&0x03ff)>>3); //+k*10Ö»ÊÇ´Ó0x31->0x41£¬ZHUANGB
@@ -464,18 +464,18 @@ int can_data_send(int j,int k)
 
 	//DEBUG: read the txb0 to 
 	//get the DLC of txb0
-	printk("data length is %d\n",0x0f&(Read_Instr_2510(TXB0DLC)));
+	//printk("data length is %d\n",0x0f&(Read_Instr_2510(TXB0DLC)));
 	if((0x40&Read_Instr_2510(TXB0DLC))>0) 
-		printk("this is a remote transmit request\n");
+		//printk("this is a remote transmit request\n");
 
 	for(i=0;i<8;i++)
 	{
-		printk("txb0 data buffer %d=%d\n",i,Read_Instr_2510(TXB0D0+i));
+		//printk("txb0 data buffer %d=%d\n",i,Read_Instr_2510(TXB0D0+i));
 	}
-	if((Read_Instr_2510(TXB0SIDL)&0x08)>0)
-		printk("This is a extend frame\n");
+/*	if((Read_Instr_2510(TXB0SIDL)&0x08)>0)
+		//printk("This is a extend frame\n");
 	else
-		printk("This is a standard frame\n");
+		//printk("This is a standard frame\n");*/
 
 	//SEND txb0
 	RTS_Instr_2510(k);
@@ -507,13 +507,13 @@ int can_data_receive(int which)
 	
 	mdelay(10);
 
-	printk("in can_data_receive:tmp=%x\n",tmp);
+	//printk("in can_data_receive:tmp=%x\n",tmp);
 
 	p=RXbuffer.RXdata+(RXbuffer.head+RXbuffer.count-1)%RXBUFLEN;
 	p->dlc=(tmp&0x0f);
 	length=p->dlc;
 
-	printk("in can_data_receive:length=%x\n",length);
+	//printk("in can_data_receive:length=%x\n",length);
 	if(length>8) length=8;
 
 	if((tmp&0x40)>0) //0100-0000: 1-> RTR bit
@@ -530,14 +530,14 @@ int can_data_receive(int which)
 	if(which==1)
 		spi_tx_data(RXB1D0);
 
-	printk("SPI receiving RxData:\n");
+	//printk("SPI receiving RxData:\n");
 	for(i = 0; i<length; i++)
 	{
 		//according to page22-7 of s3c2410 data-sheet, in normal mode if only want to receive data
 		//and you should send dummy 0xFF data.
 		spi_tx_data(0xff);
 		p->data[i] = rSPRDAT0;
-		printk("[%d]: %x, ",i,p->data[i]);
+		//printk("[%d]: %x, ",i,p->data[i]);
 	}  	
 	disable2510(); 		//Unselect the chip	
 
@@ -558,13 +558,13 @@ void Test_can_bus(void)
 
 	//Read the Mode
 	buffer = Read_Instr_2510(CANINTF);
-	if((buffer&0x01)==0x01)printk("The CANINTF register is %x\n",buffer);
-	else printk("The CANINTF register is %x\n",buffer);
+	/*if((buffer&0x01)==0x01)//printk("The CANINTF register is %x\n",buffer);
+	else //printk("The CANINTF register is %x\n",buffer);*/
 
 	//Transmit the sample data	
-	printk("Transmit the sample data\n");
+	//printk("Transmit the sample data\n");
 
-	//	for(i = 0; i < 8; i++)printk("Rxdata[%d] is %c\n",i,RXdata[i]);
+	//	for(i = 0; i < 8; i++)//printk("Rxdata[%d] is %c\n",i,RXdata[i]);
 	/*
 	send_test_frame();
 
@@ -576,7 +576,7 @@ void Test_can_bus(void)
 	if(flag == 0xff)
 	{
 	for(i = 0; i < 8; i++)
-	printk("Rxdata[%d] is %c\n",i,RXdata[i]);
+	//printk("Rxdata[%d] is %c\n",i,RXdata[i]);
 	flag = 0x88;
 	break;
 	}
@@ -586,7 +586,7 @@ void Test_can_bus(void)
 	if(flag == 0xff)
 	{
 	for(i = 0; i < 8; i++)
-	printk("No sending data but receive Rxdata[%d] is %c\n",i,RXdata[i]);
+	//printk("No sending data but receive Rxdata[%d] is %c\n",i,RXdata[i]);
 	flag =0x88;
 	}
 
@@ -598,7 +598,7 @@ void Test_can_bus(void)
 	if(flag == 0xff)
 	{
 	for(i = 0; i < 8; i++)
-	printk("Rxdata[%d] is %c\n",i,RXdata[i]);
+	//printk("Rxdata[%d] is %c\n",i,RXdata[i]);
 	flag = 0x88;
 	break;
 	}

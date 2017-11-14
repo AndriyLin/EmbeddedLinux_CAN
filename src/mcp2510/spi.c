@@ -70,7 +70,7 @@ void spi_poll_done(void)
 		nCount++;
 		if(nCount>=5000)
 		{
-			printk("SPI state poll failed\n");
+			//printk("SPI state poll failed\n");
 			break;
 		}
 	}	
